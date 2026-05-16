@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">Kendaraiin</string>
+    <string name="tab_masuk">Masuk</string>
+    <string name="tab_register">Register</string>
+    <string name="title_login">Yuk, lanjutkan perjalananmu!</string>
+    <string name="subtitle_login">Tinggal login, dan kita langsung jalan bareng lagi!</string>
+    <string name="label_email">Email*</string>
+    <string name="hint_email">Masukkan Email…</string>
+    <string name="label_password">Password*</string>
+    <string name="hint_password">Masukkan password…</string>
+    <string name="forgot_password">Lupa Password?</string>
+    <string name="btn_masuk">Masuk Sekarang</string>
+    <string name="text_or">Atau</string>
+    <string name="btn_google">Masuk Dengan Google</string>
+    <string name="btn_guest">Mode Tamu</string>
+
+    <!-- Register Strings -->
+    <string name="title_register">Daftar dulu, biar makin gampang sewa kendaraan</string>
+    <string name="subtitle_register">Buat akunmu dan nikmati kemudahan sewa kendaraan kapan aja, di mana aja.</string>
+    <string name="info_security_title">Keamanan Data Pribadi</string>
+    <string name="info_security_desc">Data Anda terlindungi sepenuhnya berdasarkan UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (PDP).\n\nLengkapi data di bawah untuk melanjutkan proses sewa.</string>
+    <string name="label_nama_lengkap">Nama Lengkap*</string>
+    <string name="hint_nama_lengkap">Masukkan nama lengkap…</string>
+    <string name="btn_verifikasi">Verifikasi</string>
+    <string name="label_no_telp">Nomor Telepon*</string>
+    <string name="hint_no_telp">Masukkan no telepon…</string>
+    <string name="label_no_telp_darurat">Nomor Telepon Darurat*</string>
+    <string name="hint_no_telp_darurat">Masukkan no telepon darurat…</string>
+    <string name="label_jenis_kelamin">Jenis Kelamin</string>
+    <string name="hint_jenis_kelamin">Pilih Jenis Kelamin…</string>
+    <string name="label_tanggal_lahir">Tanggal Lahir*</string>
+    <string name="hint_tanggal_lahir">Pilih Tanggal Lahir…</string>
+    <string name="label_konfirmasi_password">Konfirmasi Password*</string>
+    <string name="btn_lanjut">Lanjut</string>
+    <string name="btn_daftar_google">Daftar Dengan Google</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

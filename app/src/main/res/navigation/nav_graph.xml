@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.myapplication.HomeFragment"
+        android:label="Beranda"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/navigation_list"
+        android:name="com.example.myapplication.ListFragment"
+        android:label="Cari"
+        tools:layout="@layout/fragment_list" />
+
+    <fragment
+        android:id="@+id/navigation_ticket"
+        android:name="com.example.myapplication.TicketFragment"
+        android:label="Riwayat"
+        tools:layout="@layout/fragment_ticket" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.myapplication.ProfileFragment"
+        android:label="Profil"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/navigation_detail"
+        android:name="com.example.myapplication.VehicleDetailFragment"
+        android:label="Detail"
+        tools:layout="@layout/fragment_vehicle_detail" />
+
+    <fragment
+        android:id="@+id/navigation_shop"
+        android:name="com.example.myapplication.ShopFragment"
+        android:label="Toko"
+        tools:layout="@layout/fragment_shop">
+        <argument
+            android:name="admin_email"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_edit_profile"
+        android:name="com.example.myapplication.EditProfileFragment"
+        android:label="Edit Profil"
+        tools:layout="@layout/fragment_edit_profile" />
+</navigation>
