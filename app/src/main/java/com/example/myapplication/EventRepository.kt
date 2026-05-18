@@ -9,8 +9,8 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
     private val dbHelper = EventDatabaseHelper(context)
 
     // --- API CALLS ---
-    suspend fun getEventsFromApi(): Response<ApiResponse<List<Event>>> {
-        return apiService.getEvents()
+    suspend fun getEventsFromApi(adminEmail: String? = null): Response<ApiResponse<List<Event>>> {
+        return apiService.getEvents(adminEmail)
     }
 
     suspend fun getEventByIdFromApi(id: Int): Response<ApiResponse<Event>> {
@@ -25,11 +25,55 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
         return apiService.updateEvent(id, event)
     }
 
-    suspend fun deleteEventFromApi(id: Int): Response<ApiResponse<Unit>> {
-        return apiService.deleteEvent(id)
+    suspend fun deleteEventFromApi(id: Int, adminEmail: String? = null): Response<ApiResponse<Unit>> {
+        return apiService.deleteEvent(id, adminEmail)
+    }
+
+    // --- SYNC LOGIC: XAMPP -> SQLite ---
+    fun saveEventsToLocal(events: List<Event>) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            db.delete(EventDatabaseHelper.TABLE_NAME, null, null)
+            for (event in events) {
+                val values = ContentValues().apply {
+                    put(EventDatabaseHelper.COLUMN_ID, event.id)
+                    put(EventDatabaseHelper.COLUMN_NAME, event.name)
+                    put(EventDatabaseHelper.COLUMN_PRICE, event.price)
+                    put(EventDatabaseHelper.COLUMN_DESCRIPTION, event.description)
+                    put(EventDatabaseHelper.COLUMN_IS_REGISTERED, if (event.isRegistered) 1 else 0)
+                    put(EventDatabaseHelper.COLUMN_ADMIN_EMAIL, event.adminEmail)
+                    put(EventDatabaseHelper.COLUMN_IMAGE_URI, event.imageUri)
+                    put(EventDatabaseHelper.COLUMN_VEHICLE_TYPE, event.vehicleType)
+                    put(EventDatabaseHelper.COLUMN_TRANSMISSION, event.transmission)
+                    put(EventDatabaseHelper.COLUMN_SEATS, event.seats)
+                    put(EventDatabaseHelper.COLUMN_LOCATION, event.location)
+                    put(EventDatabaseHelper.COLUMN_RENTER_EMAIL, event.renterEmail)
+                }
+                db.insert(EventDatabaseHelper.TABLE_NAME, null, values)
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+            db.close()
+        }
     }
 
     // --- LOCAL DB CALLS ---
+    fun getAllEventsFromLocal(): List<Event> {
+        val eventList = mutableListOf<Event>()
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} ORDER BY ${EventDatabaseHelper.COLUMN_ID} DESC", null)
+        if (cursor.moveToFirst()) {
+            do {
+                eventList.add(cursorToEvent(cursor))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        db.close()
+        return eventList
+    }
+
     fun getEventById(id: Int): Event? {
         val db = dbHelper.readableDatabase
         val cursor = db.rawQuery(
@@ -43,45 +87,6 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
         cursor.close()
         db.close()
         return event
-    }
-
-    fun setRegistered(id: Int, isRegistered: Boolean, renterEmail: String) {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(EventDatabaseHelper.COLUMN_IS_REGISTERED, if (isRegistered) 1 else 0)
-            put(EventDatabaseHelper.COLUMN_RENTER_EMAIL, renterEmail)
-        }
-        db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
-        db.close()
-    }
-
-    fun getAllEvents(): List<Event> {
-        val eventList = mutableListOf<Event>()
-        val db = dbHelper.readableDatabase
-        val cursor: Cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME}", null)
-        if (cursor.moveToFirst()) {
-            do {
-                eventList.add(cursorToEvent(cursor))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        db.close()
-        return eventList
-    }
-
-    fun searchVehicles(query: String): List<Event> {
-        val eventList = mutableListOf<Event>()
-        val db = dbHelper.readableDatabase
-        val sql = "SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_NAME} LIKE ?"
-        val cursor: Cursor = db.rawQuery(sql, arrayOf("%$query%"))
-        if (cursor.moveToFirst()) {
-            do {
-                eventList.add(cursorToEvent(cursor))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        db.close()
-        return eventList
     }
 
     fun getEventsByAdmin(adminEmail: String): List<Event> {
@@ -101,30 +106,21 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
         return eventList
     }
 
-    fun getRentedUnitsByAdmin(adminEmail: String): List<Event> {
-        val eventList = mutableListOf<Event>()
-        val db = dbHelper.readableDatabase
-        val cursor: Cursor = db.rawQuery(
-            "SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_ADMIN_EMAIL} = ? AND ${EventDatabaseHelper.COLUMN_IS_REGISTERED} = 1",
-            arrayOf(adminEmail)
-        )
-        if (cursor.moveToFirst()) {
-            do {
-                eventList.add(cursorToEvent(cursor))
-            } while (cursor.moveToNext())
+    fun setRegistered(id: Int, isRegistered: Boolean, renterEmail: String) {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(EventDatabaseHelper.COLUMN_IS_REGISTERED, if (isRegistered) 1 else 0)
+            put(EventDatabaseHelper.COLUMN_RENTER_EMAIL, renterEmail)
         }
-        cursor.close()
+        db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
         db.close()
-        return eventList
     }
 
-    fun getEventsByRenter(renterEmail: String): List<Event> {
+    fun searchVehicles(query: String): List<Event> {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
-        val cursor: Cursor = db.rawQuery(
-            "SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_RENTER_EMAIL} = ?",
-            arrayOf(renterEmail)
-        )
+        val sql = "SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_NAME} LIKE ?"
+        val cursor: Cursor = db.rawQuery(sql, arrayOf("%$query%"))
         if (cursor.moveToFirst()) {
             do {
                 eventList.add(cursorToEvent(cursor))
@@ -141,7 +137,6 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
             name = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_NAME)),
             price = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_PRICE)),
             description = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_DESCRIPTION)),
-            // KONVERSI DI SINI: Int ke Boolean
             isRegistered = cursor.getInt(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_IS_REGISTERED)) == 1,
             adminEmail = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_ADMIN_EMAIL)),
             imageUri = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_IMAGE_URI)),

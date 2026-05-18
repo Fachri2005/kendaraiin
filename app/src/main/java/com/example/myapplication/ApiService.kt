@@ -5,7 +5,9 @@ import retrofit2.http.*
 
 interface ApiService {
     @GET("events.php")
-    suspend fun getEvents(): Response<ApiResponse<List<Event>>>
+    suspend fun getEvents(
+        @Query("admin_email") adminEmail: String? = null
+    ): Response<ApiResponse<List<Event>>>
 
     @GET("events.php")
     suspend fun getEventById(@Query("id") id: Int): Response<ApiResponse<Event>>
@@ -17,7 +19,10 @@ interface ApiService {
     suspend fun updateEvent(@Query("id") id: Int, @Body event: Event): Response<ApiResponse<Unit>>
 
     @DELETE("events.php")
-    suspend fun deleteEvent(@Query("id") id: Int): Response<ApiResponse<Unit>>
+    suspend fun deleteEvent(
+        @Query("id") id: Int,
+        @Query("admin_email") adminEmail: String? = null
+    ): Response<ApiResponse<Unit>>
 
     // Tambahkan untuk Auth (XAMPP)
     @POST("auth.php?action=register")

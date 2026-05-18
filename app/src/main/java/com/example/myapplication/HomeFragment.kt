@@ -64,8 +64,6 @@ class HomeFragment : Fragment() {
 
         repository = EventRepository(requireContext())
         val factory = ViewModelFactory(repository)
-        
-        // PERBAIKAN: Gunakan requireActivity() agar data tidak hilang saat pindah fragment
         viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
 
         rvHomeVehicles = view.findViewById(R.id.rvHomeVehicles)
@@ -104,18 +102,14 @@ class HomeFragment : Fragment() {
             etSearchHome.setOnClickListener { findNavController().navigate(R.id.navigation_list) }
         }
 
-        // 1. SETUP RECYCLER VIEW (Langsung isi data jika sudah ada di ViewModel)
         setupRecyclerView(etSearchHome.text.toString())
 
-        // 2. OBSERVE LIVE DATA
         viewModel.events.observe(viewLifecycleOwner) {
             updateVehicleList(etSearchHome.text.toString())
         }
 
-        // 3. LOAD DATA DARI API (Hanya jika belum pernah dimuat)
-        if (viewModel.events.value.isNullOrEmpty()) {
-            viewModel.fetchEventsFromApi()
-        }
+        // Sinkronisasi: Ambil data terbaru
+        viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
 
         etSearchHome.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -128,58 +122,60 @@ class HomeFragment : Fragment() {
 
     private fun setupRecyclerView(searchQuery: String) {
         if (eventAdapter == null) {
-            val allEvents = viewModel.events.value ?: emptyList()
-            val initialFiltered = allEvents.filter { event ->
-                val matchesRole = if (isAdmin) event.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) else true
-                val matchesQuery = event.name.contains(searchQuery, ignoreCase = true)
-                matchesRole && matchesQuery
-            }
-
             eventAdapter = EventAdapter(
-                events = initialFiltered,
+                events = emptyList(),
                 isAdmin = isAdmin, 
                 onItemClick = { event -> 
-                    val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
                     if (isAdmin) {
                         showAdminOptionsDialog(event)
                     } else {
+                        val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
                         findNavController().navigate(R.id.navigation_detail, bundle)
                     }
                 },
                 onDeleteClick = { event -> if (isAdmin) showDeleteConfirmation(event) } 
             )
+            rvHomeVehicles.adapter = eventAdapter
         }
-        rvHomeVehicles.adapter = eventAdapter
+        updateVehicleList(searchQuery)
+    }
+
+    private fun updateVehicleList(query: String) {
+        val allEvents = viewModel.events.value ?: emptyList()
         
-        // Update stats jika admin
+        // 1. Filter milik Admin yang sedang login
+        val myUnits = if (isAdmin) {
+            allEvents.filter { it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) }
+        } else {
+            allEvents
+        }
+
+        // 2. Filter berdasarkan Query Pencarian
+        val filtered = if (query.isEmpty()) {
+            myUnits
+        } else {
+            myUnits.filter { 
+                it.name.contains(query, ignoreCase = true) || 
+                it.vehicleType?.contains(query, ignoreCase = true) == true ||
+                it.location?.contains(query, ignoreCase = true) == true
+            }
+        }
+        
+        eventAdapter?.updateData(filtered, isAdmin)
+
         if (isAdmin) {
-            val allEvents = viewModel.events.value ?: emptyList()
-            val myUnits = allEvents.filter { it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) }
             tvTotalUnit?.text = myUnits.size.toString()
             tvTotalRented?.text = myUnits.count { it.isRegistered }.toString()
         }
     }
 
-    private fun updateVehicleList(query: String) {
-        val allEvents = viewModel.events.value ?: emptyList()
-        val filtered = allEvents.filter { event ->
-            val matchesRole = if (isAdmin) event.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) else true
-            val matchesQuery = event.name.contains(query, ignoreCase = true)
-            matchesRole && matchesQuery
-        }
-        eventAdapter?.updateData(filtered, isAdmin)
-    }
-
     private fun showAdminOptionsDialog(event: Event) {
-        val options = arrayOf("Lihat Detail (Preview)", "Edit Data Kendaraan", "Hapus Kendaraan")
+        val options = arrayOf("Lihat Detail", "Edit Unit", "Hapus Unit")
         AlertDialog.Builder(requireContext())
-            .setTitle("Opsi Unit: ${event.name}")
+            .setTitle(event.name)
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> {
-                        val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
-                        findNavController().navigate(R.id.navigation_detail, bundle)
-                    }
+                    0 -> findNavController().navigate(R.id.navigation_detail, Bundle().apply { putInt("vehicle_id", event.id) })
                     1 -> showAddEditDialog(event)
                     2 -> showDeleteConfirmation(event)
                 }
@@ -246,9 +242,9 @@ class HomeFragment : Fragment() {
                 )
 
                 if (event != null) {
-                    viewModel.updateEvent(event.id, vehicle) { viewModel.fetchEventsFromApi() }
+                    viewModel.updateEvent(event.id, vehicle) { }
                 } else {
-                    viewModel.addEvent(vehicle) { viewModel.fetchEventsFromApi() }
+                    viewModel.addEvent(vehicle) { }
                 }
             }
         }
@@ -261,7 +257,7 @@ class HomeFragment : Fragment() {
             .setTitle("Hapus Kendaraan")
             .setMessage("Apakah Anda yakin ingin menghapus ${event.name}?")
             .setPositiveButton("Hapus") { _, _ ->
-                viewModel.deleteEvent(event.id) { viewModel.fetchEventsFromApi() }
+                viewModel.deleteEvent(event.id, userEmail) { }
             }
             .setNegativeButton("Batal", null)
             .show()

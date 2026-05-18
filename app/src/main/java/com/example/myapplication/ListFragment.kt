@@ -28,6 +28,7 @@ class ListFragment : Fragment() {
     private lateinit var swipeRefresh: SwipeRefreshLayout
     
     private var isAdmin: Boolean = false
+    private var userEmail: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,44 +41,40 @@ class ListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize Repository and ViewModel
         val repository = EventRepository(requireContext())
         val factory = ViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory)[EventViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
 
-        // Bind Views
         rvEvents = view.findViewById(R.id.rvEvents)
         etSearch = view.findViewById(R.id.etSearch)
         tvListTitle = view.findViewById(R.id.tvListTitle)
         progressBar = view.findViewById(R.id.progressBar)
         swipeRefresh = view.findViewById(R.id.swipeRefresh)
 
-        // Session
         val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val userRole = sharedPref.getString("user_role", "Customer")
+        userEmail = sharedPref.getString("user_email", "") ?: ""
         isAdmin = userRole == "Admin"
+
+        if (isAdmin) {
+            tvListTitle.text = "Daftar Unit Saya"
+            etSearch.hint = "Cari di unit saya..."
+        }
 
         setupRecyclerView()
         observeViewModel()
 
-        // Fetch data from API
-        viewModel.fetchEventsFromApi()
+        // Ambil data dari API (Jika Admin, server akan filter berdasarkan email)
+        viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
 
-        // Swipe Refresh listener
         swipeRefresh.setOnRefreshListener {
-            viewModel.fetchEventsFromApi()
+            viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
         }
 
-        // Search logic
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val query = s.toString().trim()
-                if (query.isEmpty()) {
-                    viewModel.fetchEventsFromApi()
-                } else {
-                    viewModel.searchVehicles(query)
-                }
+                applyFilter(s.toString().trim())
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -86,35 +83,58 @@ class ListFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = EventAdapter(
             events = emptyList(),
-            isAdmin = false,
+            isAdmin = isAdmin,
             onItemClick = { event -> 
-                val bundle = Bundle()
-                bundle.putInt("vehicle_id", event.id)
+                val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
                 findNavController().navigate(R.id.navigation_detail, bundle)
             },
-            onDeleteClick = { }
+            onDeleteClick = { /* Opsional */ }
         )
         rvEvents.adapter = adapter
     }
 
     private fun observeViewModel() {
-        viewModel.events.observe(viewLifecycleOwner) { events ->
-            adapter.updateData(events, false)
+        viewModel.events.observe(viewLifecycleOwner) {
+            applyFilter(etSearch.text.toString().trim())
             swipeRefresh.isRefreshing = false
         }
 
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Use SwipeRefresh spinner or ProgressBar
             if (!swipeRefresh.isRefreshing) {
                 progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             }
         }
 
-        viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
-            swipeRefresh.isRefreshing = false
-            errorMessage?.let {
-                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+        viewModel.error.observe(viewLifecycleOwner) { error ->
+            if (error != null) {
+                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun applyFilter(query: String) {
+        val allEvents = viewModel.events.value ?: emptyList()
+        
+        // 1. Filter Berdasarkan Role Admin (Isolasi Data)
+        val myUnits = if (isAdmin) {
+            allEvents.filter { 
+                it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) 
+            }
+        } else {
+            allEvents
+        }
+
+        // 2. Filter Berdasarkan Search (Nama, Tipe, atau Lokasi)
+        val filtered = if (query.isEmpty()) {
+            myUnits
+        } else {
+            myUnits.filter { 
+                it.name.contains(query, ignoreCase = true) || 
+                it.vehicleType?.contains(query, ignoreCase = true) == true ||
+                it.location?.contains(query, ignoreCase = true) == true
+            }
+        }
+
+        adapter.updateData(filtered, isAdmin)
     }
 }

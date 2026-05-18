@@ -39,7 +39,7 @@ class VehicleDetailFragment : Fragment() {
         vehicleId = arguments?.getInt("vehicle_id") ?: -1
 
         val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        toolbar.setNavigationOnClickListener {
+        toolbar?.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
 
@@ -52,29 +52,32 @@ class VehicleDetailFragment : Fragment() {
     }
 
     private fun loadVehicleData(view: View) {
-        // Ambil data dari API agar konsisten dengan halaman daftar
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                // 1. Coba ambil dari API
                 val response = vehicleRepository.getEventByIdFromApi(vehicleId)
                 if (response.isSuccessful && response.body()?.success == true) {
                     val vehicle = response.body()?.data
-                    if (vehicle != null) {
+                    if (vehicle is Event) { // Pastikan tipenya benar
                         displayVehicle(view, vehicle)
-                    } else {
-                        Toast.makeText(context, "Data tidak ditemukan di server", Toast.LENGTH_SHORT).show()
+                        return@launch
                     }
+                }
+                
+                // 2. Jika API gagal/null, ambil dari Lokal
+                val localVehicle = vehicleRepository.getEventById(vehicleId)
+                if (localVehicle != null) {
+                    displayVehicle(view, localVehicle)
                 } else {
-                    // Jika API gagal, coba ambil dari lokal sebagai cadangan
-                    val localVehicle = vehicleRepository.getEventById(vehicleId)
-                    if (localVehicle != null) {
-                        displayVehicle(view, localVehicle)
-                    } else {
-                        Toast.makeText(context, "Gagal memuat data", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(context, "Gagal memuat data kendaraan", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("VehicleDetail", "Error: ${e.message}")
-                Toast.makeText(context, "Kesalahan koneksi: ${e.message}", Toast.LENGTH_SHORT).show()
+                // Cadangan terakhir jika koneksi error
+                val localVehicle = vehicleRepository.getEventById(vehicleId)
+                if (localVehicle != null) {
+                    displayVehicle(view, localVehicle)
+                }
             }
         }
     }
@@ -90,35 +93,34 @@ class VehicleDetailFragment : Fragment() {
         val tvDesc = view.findViewById<TextView>(R.id.tvVehicleDesc)
         val btnSewa = view.findViewById<Button>(R.id.btnSewaDetail)
 
-        tvName.text = vehicle.name
-        tvPrice.text = "${vehicle.price} / Hari"
-        tvType.text = vehicle.vehicleType ?: "Mobil"
-        tvTrans.text = vehicle.transmission ?: "Matic"
-        tvSeats.text = vehicle.seats ?: "5 Kursi"
-        tvLocation.text = vehicle.location ?: "Jakarta"
-        tvDesc.text = vehicle.description
+        tvName?.text = vehicle.name
+        tvPrice?.text = "${vehicle.price} / Hari"
+        tvType?.text = vehicle.vehicleType ?: "Mobil"
+        tvTrans?.text = vehicle.transmission ?: "Matic"
+        tvSeats?.text = vehicle.seats ?: "5 Kursi"
+        tvLocation?.text = vehicle.location ?: "Jakarta"
+        tvDesc?.text = vehicle.description
 
         if (!vehicle.imageUri.isNullOrEmpty()) {
             try {
-                ivDetail.setImageURI(Uri.parse(vehicle.imageUri))
+                ivDetail?.setImageURI(Uri.parse(vehicle.imageUri))
             } catch (e: Exception) {
-                ivDetail.setImageResource(android.R.drawable.ic_menu_gallery)
+                ivDetail?.setImageResource(android.R.drawable.ic_menu_gallery)
             }
         }
 
         loadShopInfo(view, vehicle.adminEmail)
 
         if (vehicle.isRegistered) {
-            btnSewa.text = "Sudah Terdaftar/Disewa"
-            btnSewa.isEnabled = false
-            btnSewa.alpha = 0.5f
+            btnSewa?.text = "Sudah Terdaftar/Disewa"
+            btnSewa?.isEnabled = false
+            btnSewa?.alpha = 0.5f
         } else {
-            btnSewa.setOnClickListener {
+            btnSewa?.setOnClickListener {
                 val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                 val userEmail = sharedPref.getString("user_email", "")
                 
                 if (!userEmail.isNullOrEmpty()) {
-                    // Simpan status ke lokal untuk history
                     vehicleRepository.setRegistered(vehicle.id, true, userEmail)
                     Toast.makeText(context, "Berhasil menyewa ${vehicle.name}!", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
@@ -130,28 +132,27 @@ class VehicleDetailFragment : Fragment() {
     }
 
     private fun loadShopInfo(view: View, adminEmail: String?) {
-        val shopLayout = view.findViewById<View>(R.id.layoutShop)
-        val tvShopName = shopLayout.findViewById<TextView>(R.id.tvShopName)
-        val btnVisit = shopLayout.findViewById<Button>(R.id.btnVisitShop)
+        val tvShopName = view.findViewById<TextView>(R.id.tvShopName)
+        val btnVisit = view.findViewById<Button>(R.id.btnVisitShop)
 
         if (!adminEmail.isNullOrEmpty()) {
             viewLifecycleOwner.lifecycleScope.launch {
                 val admin = userRepository.getUserByEmail(adminEmail)
                 if (admin != null) {
-                    tvShopName.text = admin.name
-                    btnVisit.setOnClickListener {
+                    tvShopName?.text = admin.name
+                    btnVisit?.setOnClickListener {
                         val bundle = Bundle()
                         bundle.putString("admin_email", adminEmail)
                         findNavController().navigate(R.id.navigation_shop, bundle)
                     }
                 } else {
-                    tvShopName.text = "Penyewa Umum"
-                    btnVisit.visibility = View.GONE
+                    tvShopName?.text = "Penyewa Umum"
+                    btnVisit?.visibility = View.GONE
                 }
             }
         } else {
-            tvShopName.text = "Kendaraiin Official"
-            btnVisit.visibility = View.GONE
+            tvShopName?.text = "Kendaraiin Official"
+            btnVisit?.visibility = View.GONE
         }
     }
 }
