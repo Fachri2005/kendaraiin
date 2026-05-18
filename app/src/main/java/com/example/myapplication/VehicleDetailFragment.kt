@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +12,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.launch
 
 class VehicleDetailFragment : Fragment() {
 
@@ -49,52 +52,78 @@ class VehicleDetailFragment : Fragment() {
     }
 
     private fun loadVehicleData(view: View) {
-        val vehicle = vehicleRepository.getEventById(vehicleId)
-        if (vehicle != null) {
-            val ivDetail = view.findViewById<ImageView>(R.id.ivVehicleDetail)
-            val tvName = view.findViewById<TextView>(R.id.tvVehicleName)
-            val tvPrice = view.findViewById<TextView>(R.id.tvVehiclePrice)
-            val tvType = view.findViewById<TextView>(R.id.tvDetailType)
-            val tvTrans = view.findViewById<TextView>(R.id.tvDetailTrans)
-            val tvSeats = view.findViewById<TextView>(R.id.tvDetailSeats)
-            val tvLocation = view.findViewById<TextView>(R.id.tvDetailLocation)
-            val tvDesc = view.findViewById<TextView>(R.id.tvVehicleDesc)
-            val btnSewa = view.findViewById<Button>(R.id.btnSewaDetail)
-
-            tvName.text = vehicle.name
-            tvPrice.text = "${vehicle.price} / Hari"
-            tvType.text = vehicle.vehicleType ?: "Mobil"
-            tvTrans.text = vehicle.transmission ?: "Matic"
-            tvSeats.text = vehicle.seats ?: "5 Kursi"
-            tvLocation.text = vehicle.location ?: "Jakarta"
-            tvDesc.text = vehicle.description
-
-            if (!vehicle.imageUri.isNullOrEmpty()) {
-                try {
-                    ivDetail.setImageURI(Uri.parse(vehicle.imageUri))
-                } catch (e: Exception) {
-                    ivDetail.setImageResource(android.R.drawable.ic_menu_gallery)
-                }
-            }
-
-            loadShopInfo(view, vehicle.adminEmail)
-
-            if (vehicle.isRegistered) {
-                btnSewa.text = "Sudah Terdaftar/Disewa"
-                btnSewa.isEnabled = false
-                btnSewa.alpha = 0.5f
-            } else {
-                btnSewa.setOnClickListener {
-                    val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                    val userEmail = sharedPref.getString("user_email", "")
-                    
-                    if (!userEmail.isNullOrEmpty()) {
-                        vehicleRepository.setRegistered(vehicle.id, true, userEmail)
-                        Toast.makeText(context, "Berhasil menyewa ${vehicle.name}!", Toast.LENGTH_SHORT).show()
-                        findNavController().navigateUp()
+        // Ambil data dari API agar konsisten dengan halaman daftar
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response = vehicleRepository.getEventByIdFromApi(vehicleId)
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val vehicle = response.body()?.data
+                    if (vehicle != null) {
+                        displayVehicle(view, vehicle)
                     } else {
-                        Toast.makeText(context, "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Data tidak ditemukan di server", Toast.LENGTH_SHORT).show()
                     }
+                } else {
+                    // Jika API gagal, coba ambil dari lokal sebagai cadangan
+                    val localVehicle = vehicleRepository.getEventById(vehicleId)
+                    if (localVehicle != null) {
+                        displayVehicle(view, localVehicle)
+                    } else {
+                        Toast.makeText(context, "Gagal memuat data", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("VehicleDetail", "Error: ${e.message}")
+                Toast.makeText(context, "Kesalahan koneksi: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun displayVehicle(view: View, vehicle: Event) {
+        val ivDetail = view.findViewById<ImageView>(R.id.ivVehicleDetail)
+        val tvName = view.findViewById<TextView>(R.id.tvVehicleName)
+        val tvPrice = view.findViewById<TextView>(R.id.tvVehiclePrice)
+        val tvType = view.findViewById<TextView>(R.id.tvDetailType)
+        val tvTrans = view.findViewById<TextView>(R.id.tvDetailTrans)
+        val tvSeats = view.findViewById<TextView>(R.id.tvDetailSeats)
+        val tvLocation = view.findViewById<TextView>(R.id.tvDetailLocation)
+        val tvDesc = view.findViewById<TextView>(R.id.tvVehicleDesc)
+        val btnSewa = view.findViewById<Button>(R.id.btnSewaDetail)
+
+        tvName.text = vehicle.name
+        tvPrice.text = "${vehicle.price} / Hari"
+        tvType.text = vehicle.vehicleType ?: "Mobil"
+        tvTrans.text = vehicle.transmission ?: "Matic"
+        tvSeats.text = vehicle.seats ?: "5 Kursi"
+        tvLocation.text = vehicle.location ?: "Jakarta"
+        tvDesc.text = vehicle.description
+
+        if (!vehicle.imageUri.isNullOrEmpty()) {
+            try {
+                ivDetail.setImageURI(Uri.parse(vehicle.imageUri))
+            } catch (e: Exception) {
+                ivDetail.setImageResource(android.R.drawable.ic_menu_gallery)
+            }
+        }
+
+        loadShopInfo(view, vehicle.adminEmail)
+
+        if (vehicle.isRegistered) {
+            btnSewa.text = "Sudah Terdaftar/Disewa"
+            btnSewa.isEnabled = false
+            btnSewa.alpha = 0.5f
+        } else {
+            btnSewa.setOnClickListener {
+                val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                val userEmail = sharedPref.getString("user_email", "")
+                
+                if (!userEmail.isNullOrEmpty()) {
+                    // Simpan status ke lokal untuk history
+                    vehicleRepository.setRegistered(vehicle.id, true, userEmail)
+                    Toast.makeText(context, "Berhasil menyewa ${vehicle.name}!", Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                } else {
+                    Toast.makeText(context, "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -106,17 +135,19 @@ class VehicleDetailFragment : Fragment() {
         val btnVisit = shopLayout.findViewById<Button>(R.id.btnVisitShop)
 
         if (!adminEmail.isNullOrEmpty()) {
-            val admin = userRepository.getUserByEmail(adminEmail)
-            if (admin != null) {
-                tvShopName.text = admin.name
-                btnVisit.setOnClickListener {
-                    val bundle = Bundle()
-                    bundle.putString("admin_email", adminEmail)
-                    findNavController().navigate(R.id.navigation_shop, bundle)
+            viewLifecycleOwner.lifecycleScope.launch {
+                val admin = userRepository.getUserByEmail(adminEmail)
+                if (admin != null) {
+                    tvShopName.text = admin.name
+                    btnVisit.setOnClickListener {
+                        val bundle = Bundle()
+                        bundle.putString("admin_email", adminEmail)
+                        findNavController().navigate(R.id.navigation_shop, bundle)
+                    }
+                } else {
+                    tvShopName.text = "Penyewa Umum"
+                    btnVisit.visibility = View.GONE
                 }
-            } else {
-                tvShopName.text = "Penyewa Umum"
-                btnVisit.visibility = View.GONE
             }
         } else {
             tvShopName.text = "Kendaraiin Official"

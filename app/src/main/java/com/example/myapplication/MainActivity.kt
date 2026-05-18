@@ -8,7 +8,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.databinding.ActivityMainBinding
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,11 +20,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 1. Cek Sesi Login di SharedPreferences
         val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         if (sharedPref.getBoolean("is_logged_in", false)) {
-            startActivity(Intent(this, HomeActivity::class.java))
-            finish()
+            navigateToHome()
             return
         }
 
@@ -38,14 +38,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // Navigasi ke Tab Register
         binding.btnRegisterTab.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
-            finish()
+            val intent = Intent(this, RegisterActivity::class.java)
+            startActivity(intent)
             overridePendingTransition(0, 0)
         }
 
-        // Logika Login
         binding.btnMasuk.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
@@ -55,26 +53,19 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Master Admin Backdoor
-            if (email == "admin@gmail.com" && password == "admin123") {
-                saveLoginSession("Master Admin", email, "Admin")
-                Toast.makeText(this, "Login Berhasil (Master)!", Toast.LENGTH_SHORT).show()
-                navigateToHome()
-                return@setOnClickListener
-            }
-
-            // Login via SQLite Database
-            val user = userRepository.loginUser(email, password)
-            if (user != null) {
-                saveLoginSession(user.name, user.email, user.role)
-                Toast.makeText(this, "Login Berhasil sebagai ${user.role}!", Toast.LENGTH_SHORT).show()
-                navigateToHome()
-            } else {
-                Toast.makeText(this, "Email atau Password salah!", Toast.LENGTH_SHORT).show()
+            // Login via API XAMPP
+            lifecycleScope.launch {
+                val user = userRepository.loginUser(email, password)
+                if (user != null) {
+                    saveLoginSession(user.name, user.email, user.role)
+                    Toast.makeText(this@MainActivity, "Selamat Datang, ${user.name}!", Toast.LENGTH_SHORT).show()
+                    navigateToHome()
+                } else {
+                    Toast.makeText(this@MainActivity, "Login Gagal! Cek Email/Password atau Koneksi Server.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
-        // Mode Tamu
         binding.btnGuest.setOnClickListener {
             saveLoginSession("Tamu", "guest@kendaraiin.com", "Customer")
             navigateToHome()
@@ -93,7 +84,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToHome() {
-        startActivity(Intent(this, HomeActivity::class.java))
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
         finish()
     }
 }

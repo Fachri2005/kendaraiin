@@ -9,8 +9,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.launch
 
 class ShopFragment : Fragment() {
 
@@ -54,13 +56,15 @@ class ShopFragment : Fragment() {
         val tvName = view.findViewById<TextView>(R.id.tvShopProfileName)
         val tvEmail = view.findViewById<TextView>(R.id.tvShopProfileEmail)
 
-        val admin = userRepository.getUserByEmail(adminEmail!!)
-        if (admin != null) {
-            tvName.text = admin.name
-            tvEmail.text = admin.email
-        } else {
-            tvName.text = "Penyewa Umum"
-            tvEmail.text = adminEmail
+        viewLifecycleOwner.lifecycleScope.launch {
+            val admin = userRepository.getUserByEmail(adminEmail!!)
+            if (admin != null) {
+                tvName.text = admin.name
+                tvEmail.text = admin.email
+            } else {
+                tvName.text = "Penyewa Umum"
+                tvEmail.text = adminEmail
+            }
         }
     }
 

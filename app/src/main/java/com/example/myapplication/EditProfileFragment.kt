@@ -14,7 +14,9 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.launch
 
 class EditProfileFragment : Fragment() {
 
@@ -61,31 +63,30 @@ class EditProfileFragment : Fragment() {
         val etEmail = view.findViewById<EditText>(R.id.etEditEmail)
         val etPhone = view.findViewById<EditText>(R.id.etEditPhone)
         val btnSave = view.findViewById<Button>(R.id.btnSave)
-        val tvChangePhoto = view.findViewById<View>(R.id.ivEditProfile).run {
-            ivProfile = this as ImageView
-            view.findViewById<View>(R.id.cvEditProfileImage).setOnClickListener {
-                pickImageLauncher.launch(arrayOf("image/*"))
-            }
-            // Also make the "Ubah Foto" text clickable
-            // Searching for that text view in layout
+        
+        ivProfile = view.findViewById(R.id.ivEditProfile)
+        view.findViewById<View>(R.id.cvEditProfileImage).setOnClickListener {
+            pickImageLauncher.launch(arrayOf("image/*"))
         }
 
         btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        // Load current data
+        // Load current data using Coroutines
         userEmail?.let { email ->
-            val user = userRepository.getUserByEmail(email)
-            user?.let {
-                etName.setText(it.name)
-                etEmail.setText(it.email)
-                etPhone.setText(it.phone)
-                if (it.imageUri.isNotEmpty()) {
-                    try {
-                        ivProfile.setImageURI(Uri.parse(it.imageUri))
-                    } catch (e: Exception) {
-                        ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
+            viewLifecycleOwner.lifecycleScope.launch {
+                val user = userRepository.getUserByEmail(email)
+                user?.let {
+                    etName.setText(it.name)
+                    etEmail.setText(it.email)
+                    etPhone.setText(it.phone)
+                    if (it.imageUri.isNotEmpty()) {
+                        try {
+                            ivProfile.setImageURI(Uri.parse(it.imageUri))
+                        } catch (e: Exception) {
+                            ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
+                        }
                     }
                 }
             }
@@ -94,20 +95,24 @@ class EditProfileFragment : Fragment() {
         btnSave.setOnClickListener {
             val newName = etName.text.toString().trim()
             val newPhone = etPhone.text.toString().trim()
-            val imageUriString = selectedImageUri?.toString() ?: userRepository.getUserByEmail(userEmail!!)?.imageUri ?: ""
 
             if (newName.isNotEmpty() && userEmail != null) {
-                val result = userRepository.updateUser(userEmail!!, newName, newPhone, imageUriString)
-                if (result > 0) {
-                    sharedPref.edit().apply {
-                        putString("user_name", newName)
-                        putString("user_image", imageUriString)
-                        apply()
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val currentUser = userRepository.getUserByEmail(userEmail!!)
+                    val imageUriString = selectedImageUri?.toString() ?: currentUser?.imageUri ?: ""
+                    
+                    val result = userRepository.updateUser(userEmail!!, newName, newPhone, imageUriString)
+                    if (result > 0) {
+                        sharedPref.edit().apply {
+                            putString("user_name", newName)
+                            putString("user_image", imageUriString)
+                            apply()
+                        }
+                        Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                        findNavController().navigateUp()
+                    } else {
+                        Toast.makeText(context, "Gagal memperbarui profil", Toast.LENGTH_SHORT).show()
                     }
-                    Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
-                } else {
-                    Toast.makeText(context, "Gagal memperbarui profil", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 Toast.makeText(context, "Nama tidak boleh kosong", Toast.LENGTH_SHORT).show()

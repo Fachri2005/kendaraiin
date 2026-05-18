@@ -10,7 +10,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -38,23 +40,25 @@ class ProfileFragment : Fragment() {
         val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val userEmail = sharedPref.getString("user_email", "") ?: ""
 
-        // Load latest data from Database for consistency
-        val user = userRepository.getUserByEmail(userEmail)
-        if (user != null) {
-            tvName.text = user.name
-            tvEmail.text = user.email
-            
-            if (user.imageUri.isNotEmpty()) {
-                try {
-                    ivProfile.setImageURI(Uri.parse(user.imageUri))
-                } catch (e: Exception) {
-                    ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
+        // Load latest data from Database using Coroutines
+        viewLifecycleOwner.lifecycleScope.launch {
+            val user = userRepository.getUserByEmail(userEmail)
+            if (user != null) {
+                tvName.text = user.name
+                tvEmail.text = user.email
+                
+                if (user.imageUri.isNotEmpty()) {
+                    try {
+                        ivProfile.setImageURI(Uri.parse(user.imageUri))
+                    } catch (e: Exception) {
+                        ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
+                    }
                 }
+            } else {
+                // Fallback to shared prefs
+                tvName.text = sharedPref.getString("user_name", "Pengguna")
+                tvEmail.text = userEmail
             }
-        } else {
-            // Fallback to shared prefs
-            tvName.text = sharedPref.getString("user_name", "Pengguna")
-            tvEmail.text = userEmail
         }
 
         // Navigate to Edit Profile

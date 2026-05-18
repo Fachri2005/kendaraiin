@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
 class EventAdapter(
@@ -36,7 +37,6 @@ class EventAdapter(
         val event = events[position]
         
         holder.tvName.text = event.name
-        
         val basePrice = event.price.replace(" / hari", "").replace(" / Hari", "")
         holder.tvPrice.text = "$basePrice / hari"
         
@@ -57,10 +57,8 @@ class EventAdapter(
             holder.ivProduct.setPadding(30, 30, 30, 30)
         }
 
-        // Show delete only for Admin management in Home, NOT in History
         holder.ivDelete.visibility = if (isAdmin && !isHistory) View.VISIBLE else View.GONE
 
-        // History specific: Show who rented the unit (for Admin)
         if (isHistory && isAdmin && !event.renterEmail.isNullOrEmpty()) {
             holder.tvRenterLabel.visibility = View.VISIBLE
             holder.tvRenterLabel.text = "Penyewa: ${event.renterEmail}"
@@ -75,9 +73,29 @@ class EventAdapter(
     override fun getItemCount(): Int = events.size
 
     fun updateData(newEvents: List<Event>, adminStatus: Boolean = false, historyStatus: Boolean = false) {
+        val diffCallback = EventDiffCallback(events, newEvents)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        
         events = newEvents
         isAdmin = adminStatus
         isHistory = historyStatus
-        notifyDataSetChanged()
+        
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    class EventDiffCallback(
+        private val oldList: List<Event>,
+        private val newList: List<Event>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].id == newList[newItemPosition].id
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
     }
 }

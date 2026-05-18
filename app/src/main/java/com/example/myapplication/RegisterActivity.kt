@@ -10,7 +10,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.myapplication.databinding.ActivityRegisterBinding
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class RegisterActivity : AppCompatActivity() {
@@ -65,7 +67,6 @@ class RegisterActivity : AppCompatActivity() {
 
         // Tab Navigation
         binding.btnMasukTab.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
             finish()
             overridePendingTransition(0, 0)
         }
@@ -90,40 +91,54 @@ class RegisterActivity : AppCompatActivity() {
             } else if (password != confirmPassword) {
                 Toast.makeText(this, "Password tidak cocok!", Toast.LENGTH_SHORT).show()
             } else {
-                // Save User to SQLite Database with Phone Number
-                val result = userRepository.registerUser(nama, email, password, role, telp)
+                // Buat objek User untuk dikirim ke API XAMPP
+                val user = User(
+                    name = nama,
+                    email = email,
+                    password = password,
+                    role = role,
+                    phone = telp,
+                    emergencyPhone = telpDarurat,
+                    gender = gender,
+                    birthDate = birth
+                )
 
-                if (result != -1L) {
-                    // Save Session to SharedPreferences
-                    val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                    val editor = sharedPref.edit()
-                    editor.putBoolean("is_logged_in", true)
-                    editor.putString("user_email", email)
-                    editor.putString("user_name", nama)
-                    editor.putString("user_role", role)
-                    editor.apply()
+                lifecycleScope.launch {
+                    val isSuccess = userRepository.registerUser(user)
 
-                    Toast.makeText(this, "Registrasi Berhasil sebagai $role!", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, HomeActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    Toast.makeText(this, "Registrasi Gagal! Email mungkin sudah digunakan.", Toast.LENGTH_SHORT).show()
+                    if (isSuccess) {
+                        saveLoginSession(nama, email, role)
+                        Toast.makeText(this@RegisterActivity, "Registrasi Berhasil ke Server!", Toast.LENGTH_SHORT).show()
+                        navigateToHome()
+                    } else {
+                        Toast.makeText(this@RegisterActivity, "Registrasi Gagal! Cek koneksi XAMPP atau Email sudah terdaftar.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
 
         // Guest Mode
         binding.btnGuest.setOnClickListener {
-            val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putBoolean("is_logged_in", true)
-            editor.putString("user_name", "Tamu")
-            editor.putString("user_email", "guest@kendaraiin.com")
-            editor.putString("user_role", "Customer")
-            editor.apply()
-            startActivity(Intent(this, HomeActivity::class.java))
-            finish()
+            saveLoginSession("Tamu", "guest@kendaraiin.com", "Customer")
+            navigateToHome()
         }
+    }
+
+    private fun saveLoginSession(name: String, email: String, role: String) {
+        val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putBoolean("is_logged_in", true)
+            putString("user_name", name)
+            putString("user_email", email)
+            putString("user_role", role)
+            apply()
+        }
+    }
+
+    private fun navigateToHome() {
+        val intent = Intent(this, HomeActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
