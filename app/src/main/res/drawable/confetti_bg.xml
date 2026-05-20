@@ -1,0 +1,88 @@
+<!-- confetti_bg.xml -->
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- HIJAU -->
+    <item android:left="20dp" android:top="10dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="8dp"
+                android:height="8dp"/>
+            <solid android:color="#6BFF8C"/>
+            <rotate android:fromDegrees="25"/>
+        </shape>
+    </item>
+
+    <item android:left="60dp" android:top="40dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="10dp"
+                android:height="10dp"/>
+            <solid android:color="#0B8F2D"/>
+            <rotate android:fromDegrees="45"/>
+        </shape>
+    </item>
+
+    <!-- BIRU -->
+    <item android:left="110dp" android:top="20dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="7dp"
+                android:height="7dp"/>
+            <solid android:color="#A7C8FF"/>
+            <rotate android:fromDegrees="15"/>
+        </shape>
+    </item>
+
+    <item android:left="170dp" android:top="50dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="9dp"
+                android:height="9dp"/>
+            <solid android:color="#1F3558"/>
+            <rotate android:fromDegrees="35"/>
+        </shape>
+    </item>
+
+    <!-- RANDOM -->
+    <item android:left="220dp" android:top="30dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="8dp"
+                android:height="8dp"/>
+            <solid android:color="#6BFF8C"/>
+            <rotate android:fromDegrees="60"/>
+        </shape>
+    </item>
+
+    <item android:left="260dp" android:top="60dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="10dp"
+                android:height="10dp"/>
+            <solid android:color="#0B8F2D"/>
+            <rotate android:fromDegrees="20"/>
+        </shape>
+    </item>
+
+    <item android:left="40dp" android:top="80dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="7dp"
+                android:height="7dp"/>
+            <solid android:color="#A7C8FF"/>
+            <rotate android:fromDegrees="75"/>
+        </shape>
+    </item>
+
+    <item android:left="140dp" android:top="90dp">
+        <shape android:shape="rectangle">
+            <size
+                android:width="9dp"
+                android:height="9dp"/>
+            <solid android:color="#1F3558"/>
+            <rotate android:fromDegrees="10"/>
+        </shape>
+    </item>
+
+</layer-list>
