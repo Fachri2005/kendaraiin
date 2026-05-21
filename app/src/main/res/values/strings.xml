@@ -33,5 +33,27 @@
     <string name="label_konfirmasi_password">Konfirmasi Password*</string>
     <string name="btn_lanjut">Lanjut</string>
     <string name="btn_daftar_google">Daftar Dengan Google</string>
+    <string name="daftar_kendaraan">Daftar Kendaraan</string>
+    <string name="cari_hint">Cari mobil atau motor...</string>
+    <string name="semua">Semua</string>
+    <string name="mobil">Mobil</string>
+    <string name="motor">Motor</string>
+    <string name="home">Home</string>
+    <string name="list">Cari</string>
+    <string name="history">History</string>
+    <string name="profile">Profile</string>
+    <string name="label_reviews">4.9 (124 reviews)</string>
+    <string name="label_per_hari">/hari</string>
+    <string name="label_seats">5 Seats</string>
+    <string name="label_transmission">Automatic</string>
+    <string name="btn_sewa_sekarang">Sewa Sekarang</string>
+    <string name="label_reviews_raize">4.9 (124 reviews)</string>
+    <string name="label_reviews_ninja">4.8 (99 reviews)</string>
+    <string name="label_reviews_crv">5.0 (210 reviews)</string>
+    <string name="label_ninja_specs">2 Seats • 250cc</string>
+    <string name="label_crv_specs">7 Seats • Automatic</string>
+    <string name="price_raize">Rp 450.000</string>
+    <string name="price_ninja">Rp 250.000</string>
+    <string name="price_crv">Rp 650.000</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
