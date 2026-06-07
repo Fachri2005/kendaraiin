@@ -1,6 +1,5 @@
 package com.example.myapplication
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,13 +9,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
-    private lateinit var userRepository: UserRepository
+    private val userViewModel: UserViewModel by viewModels { ViewModelFactory(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,36 +27,21 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        userRepository = UserRepository(requireContext())
         val tvName = view.findViewById<TextView>(R.id.tvProfileName)
         val tvEmail = view.findViewById<TextView>(R.id.tvProfileEmail)
         val tvEditProfile = view.findViewById<TextView>(R.id.tvEditProfile)
         val tvLogout = view.findViewById<TextView>(R.id.tvLogout)
         val ivProfile = view.findViewById<ImageView>(R.id.ivProfile)
 
-        // Get current user session
-        val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userEmail = sharedPref.getString("user_email", "") ?: ""
+        // Set initial data from session immediately
+        tvName.text = userViewModel.getUserName() ?: getString(R.string.guest_name)
+        tvEmail.text = userViewModel.getUserEmail() ?: ""
 
-        // Load latest data from Database using Coroutines
-        viewLifecycleOwner.lifecycleScope.launch {
-            val user = userRepository.getUserByEmail(userEmail)
-            if (user != null) {
-                tvName.text = user.name
-                tvEmail.text = user.email
-                
-                if (user.imageUri.isNotEmpty()) {
-                    try {
-                        ivProfile.setImageURI(Uri.parse(user.imageUri))
-                    } catch (e: Exception) {
-                        ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
-                    }
-                }
-            } else {
-                // Fallback to shared prefs
-                tvName.text = sharedPref.getString("user_name", "Pengguna")
-                tvEmail.text = userEmail
-            }
+        setupObservers(tvName, tvEmail, ivProfile)
+
+        // Fetch latest user data from server
+        userViewModel.getUserEmail()?.let { email ->
+            userViewModel.fetchUser(email)
         }
 
         // Navigate to Edit Profile
@@ -68,14 +51,29 @@ class ProfileFragment : Fragment() {
 
         // Logout logic
         tvLogout.setOnClickListener {
-            sharedPref.edit().apply {
-                putBoolean("is_logged_in", false)
-                apply()
-            }
-            
+            userViewModel.logout()
             val intent = Intent(requireContext(), MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
+        }
+    }
+
+    private fun setupObservers(tvName: TextView, tvEmail: TextView, ivProfile: ImageView) {
+        userViewModel.user.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                tvName.text = user.name
+                tvEmail.text = user.email
+                
+                if (user.imageUri.isNotEmpty()) {
+                    try {
+                        // Jika imageUri adalah path lokal dari OpenDocument
+                        ivProfile.setImageURI(Uri.parse(user.imageUri))
+                        ivProfile.colorFilter = null // Hapus tint jika ada gambar
+                    } catch (e: Exception) {
+                        ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
+                    }
+                }
+            }
         }
     }
 }

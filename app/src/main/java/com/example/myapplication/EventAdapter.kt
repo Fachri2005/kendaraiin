@@ -8,6 +8,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class EventAdapter(
     private var events: List<Event>,
@@ -59,15 +62,57 @@ class EventAdapter(
 
         holder.ivDelete.visibility = if (isAdmin && !isHistory) View.VISIBLE else View.GONE
 
-        if (isHistory && isAdmin && !event.renterEmail.isNullOrEmpty()) {
+        // Tampilkan Informasi Sewa & Sisa Waktu di Riwayat
+        if (isHistory) {
             holder.tvRenterLabel.visibility = View.VISIBLE
-            holder.tvRenterLabel.text = "Penyewa: ${event.renterEmail}"
+            val remainingText = getRemainingTimeText(event.rentalStartDate, event.rentalDuration)
+            
+            if (isAdmin && !event.renterEmail.isNullOrEmpty()) {
+                val baseText = "Penyewa: ${event.renterEmail}"
+                holder.tvRenterLabel.text = if (remainingText.isNotEmpty()) "$baseText\n$remainingText" else baseText
+            } else if (!event.rentalStartDate.isNullOrEmpty()) {
+                // Untuk Customer
+                val baseText = "Sewa: ${event.rentalStartDate} (${event.rentalDuration} Hari)"
+                holder.tvRenterLabel.text = if (remainingText.isNotEmpty()) "$baseText | $remainingText" else baseText
+            } else {
+                holder.tvRenterLabel.visibility = View.GONE
+            }
         } else {
             holder.tvRenterLabel.visibility = View.GONE
         }
 
         holder.itemView.setOnClickListener { onItemClick(event) }
         holder.ivDelete.setOnClickListener { onDeleteClick(event) }
+    }
+
+    private fun getRemainingTimeText(startDateStr: String?, duration: Int?): String {
+        if (startDateStr.isNullOrEmpty() || duration == null) return ""
+        
+        return try {
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val startDate = sdf.parse(startDateStr) ?: return ""
+            
+            val calendar = Calendar.getInstance()
+            calendar.time = startDate
+            calendar.add(Calendar.DAY_OF_YEAR, duration)
+            
+            val endDate = calendar.time
+            val currentTime = Calendar.getInstance().time
+            
+            val diffInMillis = endDate.time - currentTime.time
+            val diffInDays = diffInMillis / (24 * 60 * 60 * 1000)
+            
+            when {
+                diffInMillis <= 0 -> "Selesai"
+                diffInDays >= 1 -> "Sisa: $diffInDays Hari"
+                else -> {
+                    val diffInHours = diffInMillis / (60 * 60 * 1000)
+                    if (diffInHours >= 1) "Sisa: $diffInHours Jam" else "Sisa: Kurang dari 1 jam"
+                }
+            }
+        } catch (e: Exception) {
+            ""
+        }
     }
 
     override fun getItemCount(): Int = events.size

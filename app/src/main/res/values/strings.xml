@@ -34,4 +34,44 @@
     <string name="btn_lanjut">Lanjut</string>
     <string name="btn_daftar_google">Daftar Dengan Google</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Roles & Genders -->
+    <string name="role_customer">Customer</string>
+    <string name="role_admin">Admin</string>
+    <string name="gender_male">Laki-laki</string>
+    <string name="gender_female">Perempuan</string>
+
+    <!-- Errors -->
+    <string name="error_empty_fields">Mohon lengkapi semua data!</string>
+    <string name="error_invalid_email">Format email tidak valid!</string>
+    <string name="error_password_short">Password minimal 6 karakter!</string>
+    <string name="error_password_mismatch">Password tidak cocok!</string>
+    <string name="error_login_failed">Login Gagal! Cek Email/Password atau Koneksi Server.</string>
+    <string name="error_register_failed">Registrasi Gagal! Email mungkin sudah terdaftar.</string>
+    <string name="error_data_not_found">Data tidak ditemukan.</string>
+
+    <!-- Rental Form -->
+    <string name="price_format">Rp %1$s</string>
+    <string name="guest_name">Tamu</string>
+    <string name="rental_success">Berhasil menyewa %1$s!</string>
+    <string name="confirm_rental_title">Konfirmasi Penyewaan</string>
+    <string name="confirm_rental_message">Apakah Anda yakin ingin menyewa %1$s selama %2$s hari?</string>
+    <string name="btn_ya">Ya, Sewa</string>
+    <string name="btn_batal">Batal</string>
+    <string name="btn_back_desc">Kembali</string>
+
+    <!-- Filter Strings -->
+    <string name="title_filter">Filter &amp; Urutkan</string>
+    <string name="label_specification">Spesifikasi</string>
+    <string name="label_mobil">Mobil</string>
+    <string name="label_motor">Motor</string>
+    <string name="label_matic">Matic</string>
+    <string name="label_manual">Manual</string>
+    <string name="label_price_range">Rentang Harga / Hari</string>
+    <string name="label_sort_price">Urutkan Harga</string>
+    <string name="label_price_low">Termurah</string>
+    <string name="label_price_high">Termahal</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_apply">Terapkan</string>
+    <string name="price_range_format">Rp %1$s - Rp %2$s</string>
 </resources>

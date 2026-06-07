@@ -5,7 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import retrofit2.Response
 
-class EventRepository(context: Context, private val apiService: ApiService = RetrofitClient.apiService) {
+class EventRepository(context: Context, val apiService: ApiService = RetrofitClient.apiService) {
     private val dbHelper = EventDatabaseHelper(context)
 
     // --- API CALLS ---
@@ -49,6 +49,9 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
                     put(EventDatabaseHelper.COLUMN_SEATS, event.seats)
                     put(EventDatabaseHelper.COLUMN_LOCATION, event.location)
                     put(EventDatabaseHelper.COLUMN_RENTER_EMAIL, event.renterEmail)
+                    put(EventDatabaseHelper.COLUMN_RENTAL_START_DATE, event.rentalStartDate)
+                    put(EventDatabaseHelper.COLUMN_RENTAL_DURATION, event.rentalDuration)
+                    put(EventDatabaseHelper.COLUMN_PICKUP_LOCATION, event.pickupLocation)
                 }
                 db.insert(EventDatabaseHelper.TABLE_NAME, null, values)
             }
@@ -116,6 +119,20 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
         db.close()
     }
 
+    fun rentVehicleLocal(id: Int, renterEmail: String, startDate: String, duration: Int, pickup: String): Boolean {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(EventDatabaseHelper.COLUMN_IS_REGISTERED, 1)
+            put(EventDatabaseHelper.COLUMN_RENTER_EMAIL, renterEmail)
+            put(EventDatabaseHelper.COLUMN_RENTAL_START_DATE, startDate)
+            put(EventDatabaseHelper.COLUMN_RENTAL_DURATION, duration)
+            put(EventDatabaseHelper.COLUMN_PICKUP_LOCATION, pickup)
+        }
+        val result = db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
+        db.close()
+        return result > 0
+    }
+
     fun searchVehicles(query: String): List<Event> {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
@@ -144,7 +161,10 @@ class EventRepository(context: Context, private val apiService: ApiService = Ret
             transmission = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_TRANSMISSION)),
             seats = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_SEATS)),
             location = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_LOCATION)),
-            renterEmail = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTER_EMAIL))
+            renterEmail = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTER_EMAIL)),
+            rentalStartDate = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTAL_START_DATE)),
+            rentalDuration = cursor.getInt(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTAL_DURATION)),
+            pickupLocation = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_PICKUP_LOCATION))
         )
     }
 }

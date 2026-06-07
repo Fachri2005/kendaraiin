@@ -50,4 +50,20 @@
         android:name="com.example.myapplication.EditProfileFragment"
         android:label="Edit Profil"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/navigation_rental_form"
+        android:name="com.example.myapplication.RentalFormFragment"
+        android:label="Formulir Sewa"
+        tools:layout="@layout/fragment_rental_form">
+        <argument
+            android:name="vehicle_id"
+            app:argType="integer" />
+        <argument
+            android:name="vehicle_name"
+            app:argType="string" />
+        <argument
+            android:name="vehicle_price"
+            app:argType="string" />
+    </fragment>
 </navigation>

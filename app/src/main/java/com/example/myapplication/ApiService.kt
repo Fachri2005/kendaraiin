@@ -24,14 +24,46 @@ interface ApiService {
         @Query("admin_email") adminEmail: String? = null
     ): Response<ApiResponse<Unit>>
 
-    // Tambahkan untuk Auth (XAMPP)
-    @POST("auth.php?action=register")
-    suspend fun register(@Body user: User): Response<ApiResponse<Unit>>
+    // Auth API
+    @POST("auth.php")
+    suspend fun register(
+        @Query("action") action: String,
+        @Body user: User
+    ): Response<ApiResponse<Unit>>
 
     @FormUrlEncoded
-    @POST("auth.php?action=login")
+    @POST("auth.php")
     suspend fun login(
+        @Query("action") action: String,
         @Field("email") email: String,
         @Field("password") password: String
     ): Response<ApiResponse<User>>
+
+    @GET("auth.php")
+    suspend fun getUserByEmail(
+        @Query("action") action: String,
+        @Query("email") email: String
+    ): Response<ApiResponse<User>>
+
+    @FormUrlEncoded
+    @POST("auth.php")
+    suspend fun updateUser(
+        @Query("action") action: String,
+        @Field("email") email: String,
+        @Field("name") name: String,
+        @Field("phone") phone: String,
+        @Field("image_uri") imageUri: String
+    ): Response<ApiResponse<Unit>>
+
+    // Rental API - Samakan dengan $_POST di events.php
+    @FormUrlEncoded
+    @POST("events.php")
+    suspend fun rentVehicle(
+        @Query("action") action: String,
+        @Field("id") id: Int,
+        @Field("renter_email") renter_email: String,
+        @Field("start_date") start_date: String,
+        @Field("duration") duration: Int,
+        @Field("pickup_location") pickup_location: String
+    ): Response<ApiResponse<Unit>>
 }

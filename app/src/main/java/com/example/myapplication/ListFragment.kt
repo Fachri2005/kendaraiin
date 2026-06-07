@@ -41,8 +41,8 @@ class ListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val repository = EventRepository(requireContext())
-        val factory = ViewModelFactory(repository)
+        // Perbaikan: Gunakan requireContext() langsung, jangan buat repository di sini
+        val factory = ViewModelFactory(requireContext())
         viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
 
         rvEvents = view.findViewById(R.id.rvEvents)
@@ -64,7 +64,6 @@ class ListFragment : Fragment() {
         setupRecyclerView()
         observeViewModel()
 
-        // Ambil data dari API (Jika Admin, server akan filter berdasarkan email)
         viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
 
         swipeRefresh.setOnRefreshListener {
@@ -115,7 +114,6 @@ class ListFragment : Fragment() {
     private fun applyFilter(query: String) {
         val allEvents = viewModel.events.value ?: emptyList()
         
-        // 1. Filter Berdasarkan Role Admin (Isolasi Data)
         val myUnits = if (isAdmin) {
             allEvents.filter { 
                 it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) 
@@ -124,7 +122,6 @@ class ListFragment : Fragment() {
             allEvents
         }
 
-        // 2. Filter Berdasarkan Search (Nama, Tipe, atau Lokasi)
         val filtered = if (query.isEmpty()) {
             myUnits
         } else {

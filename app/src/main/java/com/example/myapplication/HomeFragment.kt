@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,17 +14,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.databinding.FragmentHomeBinding
+import com.example.myapplication.databinding.DialogFilterBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.slider.RangeSlider
+import java.text.NumberFormat
+import java.util.*
 
 class HomeFragment : Fragment() {
 
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+
     private lateinit var viewModel: EventViewModel
-    private lateinit var repository: EventRepository
     private var eventAdapter: EventAdapter? = null
-    private lateinit var rvHomeVehicles: RecyclerView
-    
-    private var tvTotalUnit: TextView? = null
-    private var tvTotalRented: TextView? = null
     
     private var isAdmin: Boolean = false
     private var userEmail: String = ""
@@ -34,6 +35,13 @@ class HomeFragment : Fragment() {
     private var selectedImageUri: Uri? = null
     private var currentDialogImageView: ImageView? = null
     private lateinit var pickImageLauncher: ActivityResultLauncher<Array<String>>
+
+    // Filter state
+    private var selectedTypes = mutableSetOf<String>()
+    private var selectedTransmissions = mutableSetOf<String>()
+    private var priceSortOrder: String? = null // "low_to_high" or "high_to_low"
+    private var minPrice: Float = 0f
+    private var maxPrice: Float = 10000000f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,28 +63,16 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        repository = EventRepository(requireContext())
-        val factory = ViewModelFactory(repository)
+        val factory = ViewModelFactory(requireContext())
         viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
-
-        rvHomeVehicles = view.findViewById(R.id.rvHomeVehicles)
-        tvTotalUnit = view.findViewById(R.id.tvTotalUnit)
-        tvTotalRented = view.findViewById(R.id.tvTotalRented)
-        
-        val tvWelcome = view.findViewById<TextView>(R.id.tvWelcome)
-        val tvHeading = view.findViewById<TextView>(R.id.tvHeading)
-        val layoutAdmin = view.findViewById<LinearLayout>(R.id.layoutAdminDashboard)
-        val layoutPromo = view.findViewById<LinearLayout>(R.id.layoutPromoAndCategory)
-        val btnQuickAdd = view.findViewById<Button>(R.id.btnQuickAdd)
-        val tvListTitle = view.findViewById<TextView>(R.id.tvListTitle)
-        val etSearchHome = view.findViewById<EditText>(R.id.etSearchHome)
 
         val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val userName = sharedPref.getString("user_name", "Pengguna")
@@ -84,88 +80,193 @@ class HomeFragment : Fragment() {
         userEmail = sharedPref.getString("user_email", "") ?: ""
         isAdmin = userRole == "Admin"
 
-        tvWelcome.text = "Halo, $userName!"
+        setupUI(userName)
+        setupRecyclerView()
+        observeViewModel()
+
+        refreshData()
+    }
+
+    private fun setupUI(userName: String?) {
+        binding.tvWelcome.text = "Halo, $userName!"
 
         if (isAdmin) {
-            layoutAdmin.visibility = View.VISIBLE
-            layoutPromo.visibility = View.GONE
-            tvHeading.text = "Kelola bisnis\nkendaraan Anda"
-            tvListTitle.text = "Manajemen Unit Anda"
-            btnQuickAdd.setOnClickListener { showAddEditDialog() }
-            etSearchHome.hint = "Cari unit Anda..."
+            binding.layoutAdminDashboard.visibility = View.VISIBLE
+            binding.cvFilterHome.visibility = View.GONE
+            binding.tvHeading.text = "Kelola bisnis\nkendaraan Anda"
+            binding.tvListTitle.text = "Manajemen Unit Anda"
+            
+            // Menggunakan ViewBinding camelCase
+            binding.btnQuickAdd.setOnClickListener { showAddEditDialog() }
         } else {
-            layoutAdmin.visibility = View.GONE
-            layoutPromo.visibility = View.VISIBLE
-            tvHeading.text = "Sewa kendaraan\nimpianmu hari ini"
-            tvListTitle.text = "Rekomendasi Untukmu"
-            etSearchHome.isFocusable = false
-            etSearchHome.setOnClickListener { findNavController().navigate(R.id.navigation_list) }
-        }
-
-        setupRecyclerView(etSearchHome.text.toString())
-
-        viewModel.events.observe(viewLifecycleOwner) {
-            updateVehicleList(etSearchHome.text.toString())
-        }
-
-        // Sinkronisasi: Ambil data terbaru
-        viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
-
-        etSearchHome.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                updateVehicleList(s.toString().trim())
+            binding.layoutAdminDashboard.visibility = View.GONE
+            binding.cvFilterHome.visibility = View.VISIBLE
+            binding.tvHeading.text = "Sewa kendaraan\nimpianmu hari ini"
+            binding.tvListTitle.text = "Rekomendasi Untukmu"
+            
+            binding.cvFilterHome.setOnClickListener {
+                showFilterDialog()
             }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-    }
-
-    private fun setupRecyclerView(searchQuery: String) {
-        if (eventAdapter == null) {
-            eventAdapter = EventAdapter(
-                events = emptyList(),
-                isAdmin = isAdmin, 
-                onItemClick = { event -> 
-                    if (isAdmin) {
-                        showAdminOptionsDialog(event)
-                    } else {
-                        val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
-                        findNavController().navigate(R.id.navigation_detail, bundle)
-                    }
-                },
-                onDeleteClick = { event -> if (isAdmin) showDeleteConfirmation(event) } 
-            )
-            rvHomeVehicles.adapter = eventAdapter
         }
-        updateVehicleList(searchQuery)
+        
+        binding.tvSeeAll.setOnClickListener {
+            findNavController().navigate(R.id.navigation_list)
+        }
     }
 
-    private fun updateVehicleList(query: String) {
+    private fun showFilterDialog() {
+        val dialogBinding = DialogFilterBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Sync UI dengan state saat ini
+        dialogBinding.chipMobil.isChecked = selectedTypes.contains("Mobil")
+        dialogBinding.chipMotor.isChecked = selectedTypes.contains("Motor")
+        dialogBinding.chipMatic.isChecked = selectedTransmissions.contains("Matic")
+        dialogBinding.chipManual.isChecked = selectedTransmissions.contains("Manual")
+        
+        dialogBinding.priceSlider.setValues(minPrice, maxPrice)
+        updatePriceLabel(dialogBinding.tvPriceRangeValue, minPrice, maxPrice)
+
+        // Listener Slider
+        dialogBinding.priceSlider.addOnChangeListener { slider, _, _ ->
+            updatePriceLabel(dialogBinding.tvPriceRangeValue, slider.values[0], slider.values[1])
+        }
+
+        when (priceSortOrder) {
+            "low_to_high" -> dialogBinding.rbPriceLow.isChecked = true
+            "high_to_low" -> dialogBinding.rbPriceHigh.isChecked = true
+        }
+
+        // Terapkan Filter
+        dialogBinding.btnApply.setOnClickListener {
+            selectedTypes.clear()
+            if (dialogBinding.chipMobil.isChecked) selectedTypes.add("Mobil")
+            if (dialogBinding.chipMotor.isChecked) selectedTypes.add("Motor")
+
+            selectedTransmissions.clear()
+            if (dialogBinding.chipMatic.isChecked) selectedTransmissions.add("Matic")
+            if (dialogBinding.chipManual.isChecked) selectedTransmissions.add("Manual")
+
+            minPrice = dialogBinding.priceSlider.values[0]
+            maxPrice = dialogBinding.priceSlider.values[1]
+
+            priceSortOrder = when (dialogBinding.rgPriceSort.checkedRadioButtonId) {
+                R.id.rbPriceLow -> "low_to_high"
+                R.id.rbPriceHigh -> "high_to_low"
+                else -> null
+            }
+
+            updateVehicleList()
+            dialog.dismiss()
+        }
+
+        // Reset ke Awal Semula
+        dialogBinding.btnReset.setOnClickListener {
+            selectedTypes.clear()
+            selectedTransmissions.clear()
+            priceSortOrder = null
+            minPrice = 0f
+            maxPrice = 10000000f
+            updateVehicleList()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun updatePriceLabel(textView: TextView, min: Float, max: Float) {
+        val format = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+        format.maximumFractionDigits = 0
+        textView.text = "${format.format(min.toLong())} - ${format.format(max.toLong())}"
+    }
+
+    private fun updateVehicleList() {
         val allEvents = viewModel.events.value ?: emptyList()
         
-        // 1. Filter milik Admin yang sedang login
-        val myUnits = if (isAdmin) {
+        var filtered = if (isAdmin) {
             allEvents.filter { it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) }
         } else {
-            allEvents
+            allEvents.filter { !it.isRegistered }
         }
 
-        // 2. Filter berdasarkan Query Pencarian
-        val filtered = if (query.isEmpty()) {
-            myUnits
-        } else {
-            myUnits.filter { 
-                it.name.contains(query, ignoreCase = true) || 
-                it.vehicleType?.contains(query, ignoreCase = true) == true ||
-                it.location?.contains(query, ignoreCase = true) == true
+        if (!isAdmin) {
+            // Filter Kategori
+            if (selectedTypes.isNotEmpty()) {
+                filtered = filtered.filter { event ->
+                    selectedTypes.any { type -> event.vehicleType?.equals(type, ignoreCase = true) == true }
+                }
+            }
+
+            // Filter Transmisi
+            if (selectedTransmissions.isNotEmpty()) {
+                filtered = filtered.filter { event ->
+                    selectedTransmissions.any { trans -> event.transmission?.equals(trans, ignoreCase = true) == true }
+                }
+            }
+
+            // Filter Harga
+            filtered = filtered.filter { event ->
+                val price = parsePrice(event.price)
+                price >= minPrice && price <= maxPrice
+            }
+
+            // Sorting
+            if (priceSortOrder != null) {
+                filtered = when (priceSortOrder) {
+                    "low_to_high" -> filtered.sortedBy { parsePrice(it.price) }
+                    "high_to_low" -> filtered.sortedByDescending { parsePrice(it.price) }
+                    else -> filtered
+                }
             }
         }
         
         eventAdapter?.updateData(filtered, isAdmin)
 
         if (isAdmin) {
-            tvTotalUnit?.text = myUnits.size.toString()
-            tvTotalRented?.text = myUnits.count { it.isRegistered }.toString()
+            val myUnits = allEvents.filter { it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) }
+            binding.tvTotalUnit.text = myUnits.size.toString()
+            binding.tvTotalRented.text = myUnits.count { it.isRegistered }.toString()
+        }
+    }
+
+    private fun parsePrice(priceStr: String?): Long {
+        if (priceStr == null) return 0L
+        return try {
+            priceStr.replace(Regex("[^0-9]"), "").toLong()
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
+    private fun refreshData() {
+        viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
+    }
+
+    private fun setupRecyclerView() {
+        eventAdapter = EventAdapter(
+            events = emptyList(),
+            isAdmin = isAdmin, 
+            onItemClick = { event -> 
+                if (isAdmin) {
+                    showAdminOptionsDialog(event)
+                } else {
+                    val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
+                    findNavController().navigate(R.id.navigation_detail, bundle)
+                }
+            },
+            onDeleteClick = { event -> if (isAdmin) showDeleteConfirmation(event) } 
+        )
+        binding.rvHomeVehicles.adapter = eventAdapter
+        updateVehicleList()
+    }
+
+    private fun observeViewModel() {
+        viewModel.events.observe(viewLifecycleOwner) {
+            updateVehicleList()
         }
     }
 
@@ -242,9 +343,9 @@ class HomeFragment : Fragment() {
                 )
 
                 if (event != null) {
-                    viewModel.updateEvent(event.id, vehicle) { }
+                    viewModel.updateEvent(event.id, vehicle) { refreshData() }
                 } else {
-                    viewModel.addEvent(vehicle) { }
+                    viewModel.addEvent(vehicle) { refreshData() }
                 }
             }
         }
@@ -257,9 +358,14 @@ class HomeFragment : Fragment() {
             .setTitle("Hapus Kendaraan")
             .setMessage("Apakah Anda yakin ingin menghapus ${event.name}?")
             .setPositiveButton("Hapus") { _, _ ->
-                viewModel.deleteEvent(event.id, userEmail) { }
+                viewModel.deleteEvent(event.id, userEmail) { refreshData() }
             }
             .setNegativeButton("Batal", null)
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

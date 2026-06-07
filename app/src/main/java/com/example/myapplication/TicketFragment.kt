@@ -1,31 +1,24 @@
 package com.example.myapplication
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.myapplication.databinding.FragmentTicketBinding
 
 class TicketFragment : Fragment() {
 
-    private lateinit var viewModel: EventViewModel
-    private lateinit var adapter: EventAdapter
-    private lateinit var rvTicket: RecyclerView
-    private lateinit var layoutEmpty: LinearLayout
-    private lateinit var tvEmptyTitle: TextView
-    private lateinit var tvEmptyDesc: TextView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var swipeRefresh: SwipeRefreshLayout
+    private var _binding: FragmentTicketBinding? = null
+    private val binding get() = _binding!!
+
+    // Menggunakan ViewModel dengan factory untuk sinkronisasi data
+    private val eventViewModel: EventViewModel by viewModels { ViewModelFactory(requireContext()) }
+    private val userViewModel: UserViewModel by viewModels { ViewModelFactory(requireContext()) }
     
+    private lateinit var adapter: EventAdapter
     private var isAdmin: Boolean = false
     private var userEmail: String = ""
 
@@ -33,46 +26,44 @@ class TicketFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_ticket, container, false)
+    ): View {
+        _binding = FragmentTicketBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val repository = EventRepository(requireContext())
-        val factory = ViewModelFactory(repository)
-        viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
-
-        rvTicket = view.findViewById(R.id.rvTicket)
-        layoutEmpty = view.findViewById(R.id.layoutEmpty)
-        tvEmptyTitle = view.findViewById(R.id.tvEmptyTitle)
-        tvEmptyDesc = view.findViewById(R.id.tvEmptyDesc)
-        progressBar = view.findViewById(R.id.progressBar)
-        swipeRefresh = view.findViewById(R.id.swipeRefresh)
-
-        val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userRole = sharedPref.getString("user_role", "Customer")
-        userEmail = sharedPref.getString("user_email", "") ?: ""
+        // Ambil data user dari UserViewModel (Session)
+        val userRole = userViewModel.getUserRole() ?: "Customer"
+        userEmail = userViewModel.getUserEmail() ?: ""
         isAdmin = userRole == "Admin"
 
-        val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbarTicket)
+        // Update UI berdasarkan Role
         if (isAdmin) {
-            toolbar.title = "Unit Tersewa"
-            tvEmptyTitle.text = "Belum Ada Unit Tersewa"
-            tvEmptyDesc.text = "Daftar unit milik Anda yang sedang disewa pelanggan akan muncul di sini."
+            binding.toolbarTicket.title = "Unit Tersewa"
+            binding.tvEmptyTitle.text = "Belum Ada Unit Tersewa"
+            binding.tvEmptyDesc.text = "Daftar unit milik Anda yang sedang disewa pelanggan akan muncul di sini."
         } else {
-            toolbar.title = "Riwayat Sewa"
-            tvEmptyTitle.text = "Belum Ada Riwayat"
-            tvEmptyDesc.text = "Riwayat sewa kendaraan kamu akan muncul di sini."
+            binding.toolbarTicket.title = "Riwayat Sewa"
+            binding.tvEmptyTitle.text = "Belum Ada Riwayat"
+            binding.tvEmptyDesc.text = "Riwayat sewa kendaraan kamu akan muncul di sini."
         }
 
         setupRecyclerView()
         observeViewModel()
 
-        swipeRefresh.setOnRefreshListener {
-            viewModel.fetchEventsFromApi()
+        // Panggil fetch data secara otomatis saat fragment dibuka
+        loadData()
+
+        binding.swipeRefresh.setOnRefreshListener {
+            loadData()
         }
+    }
+
+    private fun loadData() {
+        // Ambil data terbaru dari server XAMPP
+        eventViewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
     }
 
     private fun setupRecyclerView() {
@@ -86,13 +77,13 @@ class TicketFragment : Fragment() {
             },
             onDeleteClick = {}
         )
-        rvTicket.adapter = adapter
+        binding.rvTicket.adapter = adapter
     }
 
     private fun observeViewModel() {
-        viewModel.events.observe(viewLifecycleOwner) { events ->
+        eventViewModel.events.observe(viewLifecycleOwner) { events ->
             val filteredList = if (isAdmin) {
-                // Admin: Lihat unit MILIKNYA yang SEDANG DISEWA (isRegistered = true)
+                // Admin: Lihat unit MILIKNYA yang SEDANG DISEWA
                 events.filter { 
                     it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) && it.isRegistered 
                 }
@@ -104,20 +95,31 @@ class TicketFragment : Fragment() {
             }
 
             if (filteredList.isEmpty()) {
-                layoutEmpty.visibility = View.VISIBLE
-                rvTicket.visibility = View.GONE
+                binding.layoutEmpty.visibility = View.VISIBLE
+                binding.rvTicket.visibility = View.GONE
             } else {
-                layoutEmpty.visibility = View.GONE
-                rvTicket.visibility = View.VISIBLE
+                binding.layoutEmpty.visibility = View.GONE
+                binding.rvTicket.visibility = View.VISIBLE
                 adapter.updateData(filteredList, isAdmin, true)
             }
-            swipeRefresh.isRefreshing = false
+            binding.swipeRefresh.isRefreshing = false
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (!swipeRefresh.isRefreshing) {
-                progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (!binding.swipeRefresh.isRefreshing) {
+                binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             }
         }
+        
+        eventViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (error != null) {
+                binding.swipeRefresh.isRefreshing = false
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

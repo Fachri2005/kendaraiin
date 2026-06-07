@@ -22,7 +22,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Filter &amp; Urutkan"
+                android:text="@string/title_filter"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
@@ -45,7 +45,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Spesifikasi"
+                        android:text="@string/label_specification"
                         android:textStyle="bold"
                         android:textSize="14sp"
                         android:textColor="@color/black"
@@ -55,23 +55,29 @@
                         android:id="@+id/cgType"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:chipSpacingHorizontal="8dp">
+                        app:chipSpacingHorizontal="8dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipMobil"
                             style="@style/Widget.MaterialComponents.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Mobil"
-                            app:chipBackgroundColor="@color/white"
-                            app:checkedIconTint="@color/green_primary" />
+                            android:text="@string/label_mobil"
+                            android:textColor="@color/chip_text_state_list"
+                            app:chipBackgroundColor="@color/chip_background_state_list"
+                            app:chipCornerRadius="24dp"
+                            app:checkedIconVisible="false" />
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipMotor"
                             style="@style/Widget.MaterialComponents.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Motor"
-                            app:chipBackgroundColor="@color/white"
-                            app:checkedIconTint="@color/green_primary" />
+                            android:text="@string/label_motor"
+                            android:textColor="@color/chip_text_state_list"
+                            app:chipBackgroundColor="@color/chip_background_state_list"
+                            app:chipCornerRadius="24dp"
+                            app:checkedIconVisible="false" />
                     </com.google.android.material.chip.ChipGroup>
 
                     <com.google.android.material.chip.ChipGroup
@@ -79,21 +85,29 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        app:chipSpacingHorizontal="8dp">
+                        app:chipSpacingHorizontal="8dp"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipMatic"
                             style="@style/Widget.MaterialComponents.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Matic"
-                            app:chipBackgroundColor="@color/white" />
+                            android:text="@string/label_matic"
+                            android:textColor="@color/chip_text_state_list"
+                            app:chipBackgroundColor="@color/chip_background_state_list"
+                            app:chipCornerRadius="24dp"
+                            app:checkedIconVisible="false" />
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipManual"
                             style="@style/Widget.MaterialComponents.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Manual"
-                            app:chipBackgroundColor="@color/white" />
+                            android:text="@string/label_manual"
+                            android:textColor="@color/chip_text_state_list"
+                            app:chipBackgroundColor="@color/chip_background_state_list"
+                            app:chipCornerRadius="24dp"
+                            app:checkedIconVisible="false" />
                     </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -102,7 +116,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Rentang Harga / Hari"
+                android:text="@string/label_price_range"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
@@ -129,42 +143,11 @@
                 app:trackColorInactive="@color/gray_border"
                 app:labelBehavior="gone" />
 
-            <!-- Section 3: Durasi Sewa -->
+            <!-- Section 3: Urutan -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Durasi Sewa (Hari)"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"/>
-
-            <TextView
-                android:id="@+id/tvDurationValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="1 - 30 Hari"
-                android:textColor="@color/green_primary"
-                android:textStyle="bold" />
-
-            <com.google.android.material.slider.RangeSlider
-                android:id="@+id/durationSlider"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:valueFrom="1"
-                android:valueTo="30"
-                app:values="@array/initial_duration_values"
-                app:thumbColor="@color/green_primary"
-                app:trackColorActive="@color/green_primary"
-                app:trackColorInactive="@color/gray_border"
-                app:labelBehavior="gone" />
-
-            <!-- Section 4: Urutan -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Urutkan"
+                android:text="@string/label_sort_price"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
@@ -181,7 +164,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Termurah"
+                    android:text="@string/label_price_low"
                     android:textSize="14sp"
                     android:buttonTint="@color/green_primary" />
                 <RadioButton
@@ -189,7 +172,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Termahal"
+                    android:text="@string/label_price_high"
                     android:textSize="14sp"
                     android:buttonTint="@color/green_primary" />
             </RadioGroup>
@@ -207,7 +190,7 @@
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Reset"
+                    android:text="@string/btn_reset"
                     android:textAllCaps="false"
                     android:textColor="@color/gray_text" />
 
@@ -216,7 +199,7 @@
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_weight="1.5"
-                    android:text="Terapkan"
+                    android:text="@string/btn_apply"
                     android:textAllCaps="false"
                     android:textStyle="bold"
                     android:backgroundTint="@color/green_primary"

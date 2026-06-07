@@ -19,13 +19,12 @@ class EventViewModel(private val repository: EventRepository) : ViewModel() {
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> get() = _error
 
-    /**
-     * SINKRONISASI: Mengambil data dari API dan menyimpannya ke SQLite
-     */
+    private val _rentalSuccess = MutableLiveData<Boolean>()
+    val rentalSuccess: LiveData<Boolean> get() = _rentalSuccess
+
     fun fetchEventsFromApi(adminEmail: String? = null) {
         _isLoading.value = true
         viewModelScope.launch {
-            // 1. Tampilkan data dari Local DB dulu (biar user gak nunggu loading lama)
             val localData = withContext(Dispatchers.IO) {
                 repository.getAllEventsFromLocal()
             }
@@ -33,20 +32,15 @@ class EventViewModel(private val repository: EventRepository) : ViewModel() {
                 _events.postValue(localData)
             }
 
-            // 2. Ambil data terbaru dari Server (XAMPP)
             try {
                 val response = repository.getEventsFromApi(adminEmail)
                 if (response.isSuccessful) {
                     val apiResponse = response.body()
                     if (apiResponse?.success == true) {
                         val remoteData = apiResponse.data ?: emptyList()
-
-                        // 3. Simpan data terbaru ke SQLite (Sinkronisasi)
                         withContext(Dispatchers.IO) {
                             repository.saveEventsToLocal(remoteData)
                         }
-
-                        // 4. Update UI dengan data hasil sinkronisasi
                         _events.postValue(remoteData)
                         _error.postValue(null)
                     } else {
@@ -63,6 +57,38 @@ class EventViewModel(private val repository: EventRepository) : ViewModel() {
         }
     }
 
+    fun rentVehicle(id: Int, renterEmail: String, startDate: String, duration: Int, pickup: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                // Gunakan nama parameter dan tipe data yang sesuai dengan ApiService yang baru
+                val response = repository.apiService.rentVehicle(
+                    action = "rent",
+                    id = id,                     // Mengirim Int
+                    renter_email = renterEmail,
+                    start_date = startDate,      // Nama parameter baru
+                    duration = duration,         // Mengirim Int & Nama parameter baru
+                    pickup_location = pickup
+                )
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    withContext(Dispatchers.IO) {
+                        repository.rentVehicleLocal(id, renterEmail, startDate, duration, pickup)
+                    }
+                    fetchEventsFromApi() 
+                    _rentalSuccess.postValue(true)
+                } else {
+                    val errorMsg = response.body()?.message ?: "Gagal menyimpan ke server"
+                    _error.postValue("Gagal menyewa: $errorMsg")
+                }
+            } catch (e: Exception) {
+                _error.postValue("Gagal terhubung ke server: ${e.localizedMessage}")
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
     fun addEvent(event: Event, onSuccess: () -> Unit) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -70,10 +96,9 @@ class EventViewModel(private val repository: EventRepository) : ViewModel() {
                 val response = repository.addEventToApi(event)
                 if (response.isSuccessful && response.body()?.success == true) {
                     onSuccess()
-                    // Refresh dan sinkron ulang
                     fetchEventsFromApi(event.adminEmail)
                 } else {
-                    _error.postValue("Gagal menambah unit: ${response.body()?.message}")
+                    _error.postValue("Gagal menambah unit: ${response.body()?.message ?: "Unknown Error"}")
                 }
             } catch (e: Exception) {
                 _error.postValue("Gagal: ${e.localizedMessage}")
@@ -91,6 +116,8 @@ class EventViewModel(private val repository: EventRepository) : ViewModel() {
                 if (response.isSuccessful && response.body()?.success == true) {
                     onSuccess()
                     fetchEventsFromApi(event.adminEmail)
+                } else {
+                    _error.postValue("Gagal update: ${response.body()?.message ?: "Unknown Error"}")
                 }
             } catch (e: Exception) {
                 _error.postValue("Gagal: ${e.localizedMessage}")
@@ -108,6 +135,8 @@ class EventViewModel(private val repository: EventRepository) : ViewModel() {
                 if (response.isSuccessful && response.body()?.success == true) {
                     onSuccess()
                     fetchEventsFromApi(adminEmail)
+                } else {
+                    _error.postValue("Gagal menghapus: ${response.body()?.message ?: "Unknown Error"}")
                 }
             } catch (e: Exception) {
                 _error.postValue("Gagal: ${e.localizedMessage}")

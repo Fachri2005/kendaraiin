@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -41,6 +42,7 @@ class RentalFormFragment : Fragment() {
         vehiclePrice = arguments?.getString("vehicle_price")?.replace(Regex("[^0-9]"), "")?.toIntOrNull() ?: 0
         vehicleName = arguments?.getString("vehicle_name") ?: ""
 
+        val btnBack = view.findViewById<ImageButton>(R.id.btnBack)
         val etName = view.findViewById<EditText>(R.id.etRentalName)
         val etStartDate = view.findViewById<EditText>(R.id.etStartDate)
         val etDuration = view.findViewById<EditText>(R.id.etDuration)
@@ -49,14 +51,43 @@ class RentalFormFragment : Fragment() {
         val tvTotal = view.findViewById<TextView>(R.id.tvTotalPrice)
         val btnConfirm = view.findViewById<Button>(R.id.btnConfirmRental)
 
-        tvPriceDay.text = "Rp ${String.format("%, d", vehiclePrice)}"
+        btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
 
-        // Pre-fill user name
+        tvPriceDay.text = getString(R.string.price_format, String.format(Locale.getDefault(), "%,d", vehiclePrice))
+
+        // Pre-fill user name from session
+        val currentUserName = userViewModel.getUserName()
+        if (currentUserName != null) {
+            etName.setText(currentUserName)
+        } else {
+            etName.setText(getString(R.string.guest_name))
+        }
+
+        // Fetch latest user data
         userViewModel.getUserEmail()?.let { email ->
             userViewModel.fetchUser(email)
         }
+        
         userViewModel.user.observe(viewLifecycleOwner) { user ->
-            etName.setText(user?.name ?: "Pengguna")
+            if (user != null) {
+                etName.setText(user.name)
+            }
+        }
+
+        // Observe rental process
+        eventViewModel.rentalSuccess.observe(viewLifecycleOwner) { success ->
+            if (success) {
+                Toast.makeText(context, "Berhasil menyewa $vehicleName!", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack(R.id.navigation_home, false)
+            }
+        }
+
+        eventViewModel.error.observe(viewLifecycleOwner) { errorMsg ->
+            errorMsg?.let {
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            }
         }
 
         setupDatePicker(etStartDate)
@@ -66,31 +97,30 @@ class RentalFormFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val duration = s.toString().toIntOrNull() ?: 0
                 val total = duration * vehiclePrice
-                tvTotal.text = "Rp ${String.format("%, d", total)}"
+                tvTotal.text = getString(R.string.price_format, String.format(Locale.getDefault(), "%,d", total))
             }
             override fun afterTextChanged(s: Editable?) {}
         })
 
         btnConfirm.setOnClickListener {
+            val name = etName.text.toString()
             val startDate = etStartDate.text.toString()
-            val duration = etDuration.text.toString()
+            val durationStr = etDuration.text.toString()
             val pickup = etPickup.text.toString()
 
-            if (startDate.isEmpty() || duration.isEmpty() || pickup.isEmpty()) {
-                Toast.makeText(context, "Mohon lengkapi semua data!", Toast.LENGTH_SHORT).show()
+            if (name.isEmpty() || startDate.isEmpty() || durationStr.isEmpty() || pickup.isEmpty()) {
+                Toast.makeText(context, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Di sini kita panggil fungsi rental di repository
+            val duration = durationStr.toIntOrNull() ?: 0
             val userEmail = userViewModel.getUserEmail() ?: ""
+            
             if (userEmail.isNotEmpty() && vehicleId != -1) {
-                // Untuk sementara kita gunakan setRegistered yang ada
-                // Di masa depan bisa ditambahkan tabel khusus penyewaan
-                val repo = EventRepository(requireContext())
-                repo.setRegistered(vehicleId, true, userEmail)
-                
-                Toast.makeText(context, "Berhasil menyewa $vehicleName!", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack(R.id.navigation_home, false)
+                // Call ViewModel to save to API and Local DB
+                eventViewModel.rentVehicle(vehicleId, userEmail, startDate, duration, pickup)
+            } else {
+                Toast.makeText(context, "Gagal: Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -108,6 +138,8 @@ class RentalFormFragment : Fragment() {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
             )
+            
+            datePickerDialog.datePicker.minDate = calendar.timeInMillis
             datePickerDialog.show()
         }
     }

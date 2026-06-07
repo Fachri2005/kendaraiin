@@ -60,11 +60,58 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         }
     }
 
+    fun fetchUser(email: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val result = repository.getUserByEmail(email)
+                _user.postValue(result)
+            } catch (e: Exception) {
+                _error.postValue("Gagal mengambil data: ${e.message}")
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
+    fun updateUser(email: String, name: String, phone: String, imageUri: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val success = repository.updateUser(email, name, phone, imageUri)
+                if (success) {
+                    _isSuccess.postValue(true)
+                    // Update local session
+                    val currentUser = _user.value
+                    if (currentUser != null) {
+                        val updatedUser = currentUser.copy(name = name, phone = phone, imageUri = imageUri)
+                        repository.saveLoginSession(updatedUser)
+                        _user.postValue(updatedUser)
+                    }
+                } else {
+                    _error.postValue("Gagal memperbarui profil.")
+                }
+            } catch (e: Exception) {
+                _error.postValue("Terjadi kesalahan: ${e.message}")
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
     fun loginAsGuest() {
         val guestUser = User(name = "Tamu", email = "guest@kendaraiin.com", password = "", role = "Customer")
         repository.saveLoginSession(guestUser)
         _user.value = guestUser
     }
 
+    fun logout() {
+        repository.logout()
+        _user.value = null
+    }
+
     fun isLoggedIn(): Boolean = repository.isLoggedIn()
+    fun getUserEmail(): String? = repository.getUserEmail()
+    fun getUserName(): String? = repository.getUserName()
+    fun getUserRole(): String? = repository.getUserRole()
 }

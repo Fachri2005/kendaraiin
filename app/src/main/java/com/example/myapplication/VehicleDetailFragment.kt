@@ -58,7 +58,7 @@ class VehicleDetailFragment : Fragment() {
                 val response = vehicleRepository.getEventByIdFromApi(vehicleId)
                 if (response.isSuccessful && response.body()?.success == true) {
                     val vehicle = response.body()?.data
-                    if (vehicle is Event) { // Pastikan tipenya benar
+                    if (vehicle is Event) {
                         displayVehicle(view, vehicle)
                         return@launch
                     }
@@ -73,7 +73,6 @@ class VehicleDetailFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 Log.e("VehicleDetail", "Error: ${e.message}")
-                // Cadangan terakhir jika koneksi error
                 val localVehicle = vehicleRepository.getEventById(vehicleId)
                 if (localVehicle != null) {
                     displayVehicle(view, localVehicle)
@@ -118,12 +117,16 @@ class VehicleDetailFragment : Fragment() {
         } else {
             btnSewa?.setOnClickListener {
                 val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                val userEmail = sharedPref.getString("user_email", "")
+                val isLoggedIn = sharedPref.getBoolean("is_logged_in", false)
                 
-                if (!userEmail.isNullOrEmpty()) {
-                    vehicleRepository.setRegistered(vehicle.id, true, userEmail)
-                    Toast.makeText(context, "Berhasil menyewa ${vehicle.name}!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
+                if (isLoggedIn) {
+                    // Berpindah ke Form Sewa bukannya langsung menyewa
+                    val bundle = Bundle().apply {
+                        putInt("vehicle_id", vehicle.id)
+                        putString("vehicle_name", vehicle.name)
+                        putString("vehicle_price", vehicle.price)
+                    }
+                    findNavController().navigate(R.id.navigation_rental_form, bundle)
                 } else {
                     Toast.makeText(context, "Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
                 }
