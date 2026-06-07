@@ -57,7 +57,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Rp 0 / Hari"
-                    android:textColor="@color/green_primary"
+                    android:textColor="#294669"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -163,7 +163,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
                     android:layout_marginBottom="32dp"
-                    android:backgroundTint="@color/green_primary"
+                    android:backgroundTint="#294669"
                     android:padding="16dp"
                     android:text="Sewa Sekarang"
                     android:textAllCaps="false"

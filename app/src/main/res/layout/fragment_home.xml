@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:descendantFocusability="blocksDescendants">
 
-        <!-- Green Header Background -->
+        <!-- Header Background -->
         <View
             android:id="@+id/headerBg"
             android:layout_width="match_parent"
@@ -24,7 +24,7 @@
             android:background="@drawable/bg_home_header"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Top Bar Info -->
+        <!-- Top Bar -->
         <ImageView
             android:id="@+id/ivMenu"
             android:layout_width="24dp"
@@ -136,7 +136,7 @@
                 <androidx.cardview.widget.CardView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    app:cardBackgroundColor="@color/green_primary"
+                    app:cardBackgroundColor="#294669"
                     app:cardCornerRadius="10dp"
                     app:cardElevation="0dp">
                     <ImageView
@@ -173,7 +173,7 @@
                     app:cardCornerRadius="12dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Unit" android:textSize="12sp" android:textColor="#CCCCCC" />
-                        <TextView android:id="@+id/tvTotalUnit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="24sp" android:textStyle="bold" android:textColor="@color/green_primary" />
+                        <TextView android:id="@+id/tvTotalUnit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="24sp" android:textStyle="bold" android:textColor="#294669" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
                 <androidx.cardview.widget.CardView
@@ -198,8 +198,8 @@
                 android:text="+ Tambah Unit Baru"
                 android:textAllCaps="false"
                 android:backgroundTint="@color/white"
-                android:textColor="@color/green_primary"
-                app:strokeColor="@color/green_primary"
+                android:textColor="#294669"
+                app:strokeColor="#294669"
                 app:strokeWidth="1dp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
         </LinearLayout>
@@ -218,26 +218,100 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingHorizontal="24dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Kategori Sewa" android:textColor="@color/black" android:textSize="16sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:text="Lihat Semua" android:textColor="@color/green_primary" android:textSize="12sp" android:textStyle="bold" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="24dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kategori Sewa"
+                        android:textColor="@color/black"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:text="Lihat Semua"
+                        android:textColor="#294669"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
                 </RelativeLayout>
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:orientation="horizontal" android:paddingHorizontal="24dp">
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:layout_marginEnd="24dp">
-                        <androidx.cardview.widget.CardView android:layout_width="64dp" android:layout_height="64dp" app:cardCornerRadius="16dp" app:cardElevation="0dp" app:cardBackgroundColor="#F1F8F1">
-                            <ImageView android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_directions" app:tint="@color/green_primary" />
+
+                <!-- Kategori: Mobil & Motor -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="24dp">
+
+                    <!-- Mobil -->
+                    <LinearLayout
+                        android:id="@+id/filterMobil"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:layout_marginEnd="24dp">
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="#E8EEF4">
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_car"
+                                app:tint="#294669" />
                         </androidx.cardview.widget.CardView>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Mobil" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Mobil"
+                            android:textColor="@color/black"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical">
-                        <androidx.cardview.widget.CardView android:layout_width="64dp" android:layout_height="64dp" app:cardCornerRadius="16dp" app:cardElevation="0dp" app:cardBackgroundColor="#F8F8FB">
-                            <ImageView android:layout_width="32dp" android:layout_height="32dp" android:layout_gravity="center" android:src="@android:drawable/ic_menu_send" app:tint="@color/gray_text" />
+
+                    <!-- Motor -->
+                    <LinearLayout
+                        android:id="@+id/filterMotor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="0dp"
+                            app:cardBackgroundColor="#F8F8FB">
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_motor"
+                                app:tint="@color/gray_text" />
                         </androidx.cardview.widget.CardView>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Motor"
+                            android:textColor="@color/black"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Rekomendasi -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -255,7 +329,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:text="Lihat Semua" android:textColor="@color/green_primary" android:textSize="12sp" android:textStyle="bold" />
+                    android:text="Lihat Semua"
+                    android:textColor="#294669"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
             </RelativeLayout>
 
             <androidx.recyclerview.widget.RecyclerView

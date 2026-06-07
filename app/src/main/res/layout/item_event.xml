@@ -74,11 +74,11 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:background="@drawable/bg_tab_container"
-                    android:backgroundTint="#F1F8F1"
+                    android:backgroundTint="#EEF2F7"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="2dp"
                     android:text="Matic"
-                    android:textColor="@color/green_primary"
+                    android:textColor="#294669"
                     android:textSize="10sp"
                     android:textStyle="bold" />
             </RelativeLayout>
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Rp 450.000 / hari"
-                android:textColor="@color/green_primary"
+                android:textColor="#294669"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 

@@ -23,6 +23,8 @@
         app:menu="@menu/bottom_nav_menu"
         app:itemIconTint="@color/nav_item_color"
         app:itemTextColor="@color/nav_item_color"
+        app:itemRippleColor="#1A294669"
+        app:itemActiveIndicatorColor="#1A294669"
         app:labelVisibilityMode="labeled" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

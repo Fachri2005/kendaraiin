@@ -21,9 +21,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_myplaces"
-            app:tint="@color/green_primary"
+            app:tint="#294669"
             android:background="@drawable/bg_tab_container"
-            android:backgroundTint="#E8F5E9"
+            android:backgroundTint="#E8EEF4"
             android:padding="8dp" />
 
         <LinearLayout
@@ -60,8 +60,8 @@
             android:textSize="12sp"
             android:textAllCaps="false"
             android:paddingHorizontal="12dp"
-            app:strokeColor="@color/green_primary"
-            android:textColor="@color/green_primary"
+            app:strokeColor="#294669"
+            android:textColor="#294669"
             app:cornerRadius="20dp" />
 
     </LinearLayout>
