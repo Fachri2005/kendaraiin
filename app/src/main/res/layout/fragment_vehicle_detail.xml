@@ -14,7 +14,6 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
-            app:navigationIcon="@android:drawable/ic_menu_revert"
             app:title="Detail Kendaraan"
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
@@ -34,7 +33,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:scaleType="centerCrop"
-                android:background="#F5F5F5" />
+                android:background="#F5F5F5"
+                android:contentDescription="@null" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -57,7 +57,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Rp 0 / Hari"
-                    android:textColor="@color/green_primary"
+                    android:textColor="#294669"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
@@ -124,7 +124,8 @@
                         android:layout_width="18dp"
                         android:layout_height="18dp"
                         android:src="@android:drawable/ic_menu_mylocation"
-                        app:tint="@color/gray_text" />
+                        app:tint="@color/gray_text"
+                        android:contentDescription="@null" />
                     <TextView
                         android:id="@+id/tvDetailLocation"
                         android:layout_width="wrap_content"
@@ -163,7 +164,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
                     android:layout_marginBottom="32dp"
-                    android:backgroundTint="@color/green_primary"
+                    android:backgroundTint="#294669"
                     android:padding="16dp"
                     android:text="Sewa Sekarang"
                     android:textAllCaps="false"

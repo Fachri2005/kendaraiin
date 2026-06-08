@@ -128,7 +128,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Rp 0 - Rp 10.000.000"
-                android:textColor="@color/green_primary"
+                android:textColor="#294669"
                 android:textStyle="bold" />
 
             <com.google.android.material.slider.RangeSlider
@@ -138,8 +138,8 @@
                 android:valueFrom="0"
                 android:valueTo="10000000"
                 app:values="@array/initial_price_values"
-                app:thumbColor="@color/green_primary"
-                app:trackColorActive="@color/green_primary"
+                app:thumbColor="#294669"
+                app:trackColorActive="#294669"
                 app:trackColorInactive="@color/gray_border"
                 app:labelBehavior="gone" />
 
@@ -166,7 +166,7 @@
                     android:layout_weight="1"
                     android:text="@string/label_price_low"
                     android:textSize="14sp"
-                    android:buttonTint="@color/green_primary" />
+                    android:buttonTint="#294669" />
                 <RadioButton
                     android:id="@+id/rbPriceHigh"
                     android:layout_width="0dp"
@@ -174,7 +174,7 @@
                     android:layout_weight="1"
                     android:text="@string/label_price_high"
                     android:textSize="14sp"
-                    android:buttonTint="@color/green_primary" />
+                    android:buttonTint="#294669" />
             </RadioGroup>
 
             <!-- Aksi Buttons -->
@@ -202,7 +202,7 @@
                     android:text="@string/btn_apply"
                     android:textAllCaps="false"
                     android:textStyle="bold"
-                    android:backgroundTint="@color/green_primary"
+                    android:backgroundTint="#294669"
                     android:textColor="@color/white"
                     app:cornerRadius="14dp"
                     app:elevation="4dp" />

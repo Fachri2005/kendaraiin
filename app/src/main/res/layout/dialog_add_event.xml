@@ -40,7 +40,7 @@
             android:layout_marginTop="8dp"
             android:text="Pilih Foto dari Galeri"
             android:textAllCaps="false"
-            android:textColor="@color/green_primary"
+            android:textColor="#294669"
             style="@style/Widget.MaterialComponents.Button.TextButton" />
 
         <View
@@ -58,7 +58,9 @@
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="#294669"
+            app:hintTextColor="#294669">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
@@ -76,7 +78,9 @@
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="#294669"
+            app:hintTextColor="#294669">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPrice"
                 android:layout_width="match_parent"
@@ -101,7 +105,9 @@
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <AutoCompleteTextView
                     android:id="@+id/actvVehicleType"
                     android:layout_width="match_parent"
@@ -119,7 +125,9 @@
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <AutoCompleteTextView
                     android:id="@+id/actvTransmission"
                     android:layout_width="match_parent"
@@ -145,7 +153,9 @@
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSeats"
                     android:layout_width="match_parent"
@@ -163,7 +173,9 @@
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etLocation"
                     android:layout_width="match_parent"
@@ -181,7 +193,9 @@
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="#294669"
+            app:hintTextColor="#294669">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etDesc"
                 android:layout_width="match_parent"

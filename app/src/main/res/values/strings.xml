@@ -74,4 +74,16 @@
     <string name="btn_reset">Reset</string>
     <string name="btn_apply">Terapkan</string>
     <string name="price_range_format">Rp %1$s - Rp %2$s</string>
+
+    <!-- Home Strings -->
+    <string name="home_welcome">Halo, %1$s!</string>
+    <string name="home_location">📍 Jakarta, Indonesia</string>
+    <string name="home_heading">Sewa kendaraan\nimpianmu hari ini</string>
+    <string name="home_search_hint">Cari kendaraan favoritmu…</string>
+    <string name="home_total_unit">Total Unit</string>
+    <string name="home_rented">Disewa</string>
+    <string name="home_btn_add_unit">+ Tambah Unit Baru</string>
+    <string name="home_category_title">Kategori Sewa</string>
+    <string name="home_see_all">Lihat Semua</string>
+    <string name="home_recommendation_title">Rekomendasi Sewa</string>
 </resources>

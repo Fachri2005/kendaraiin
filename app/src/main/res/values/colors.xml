@@ -2,7 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="green_primary">#4CAF50</color>
+    <color name="primary_blue">#294669</color>
+    <color name="green_primary">#294669</color> <!-- Diubah ke biru agar konsisten -->
     <color name="gray_text">#757575</color>
     <color name="gray_border">#E0E0E0</color>
     <color name="gray_bg">#F8F9FA</color>
