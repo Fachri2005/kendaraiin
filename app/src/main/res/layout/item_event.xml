@@ -29,8 +29,27 @@
                 android:src="@android:drawable/ic_menu_gallery"
                 android:background="#F5F5F5" />
 
+            <!-- Status Badge -->
+            <TextView
+                android:id="@+id/tvStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="12dp"
+                android:background="@drawable/bg_tab_container"
+                android:backgroundTint="#80000000"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="@string/status_pending"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <!-- Favorite Heart Icon -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/cvFavorite"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="top|end"
@@ -63,7 +82,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_toStartOf="@id/tvTransmissionBadge"
-                    android:text="Toyota Avanza 2022"
+                    android:text="@string/unknown_name"
                     android:textColor="@color/black"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -77,7 +96,7 @@
                     android:backgroundTint="#EEF2F7"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="2dp"
-                    android:text="Matic"
+                    android:text="@string/label_matic"
                     android:textColor="#294669"
                     android:textSize="10sp"
                     android:textStyle="bold" />
@@ -88,7 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Rp 450.000 / hari"
+                android:text="Rp 0"
                 android:textColor="#294669"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -122,7 +141,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:text="7 Kursi"
+                    android:text="2 Kursi"
                     android:textColor="@color/gray_text"
                     android:textSize="11sp" />
 
@@ -138,7 +157,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:text="Jakarta Selatan"
+                    android:text="@string/home_location"
                     android:textColor="@color/gray_text"
                     android:textSize="11sp" />
 
@@ -154,6 +173,46 @@
                     android:src="@android:drawable/ic_menu_delete"
                     android:visibility="gone"
                     app:tint="#E53935" />
+            </LinearLayout>
+
+            <!-- Action Buttons for Rental History -->
+            <LinearLayout
+                android:id="@+id/layoutActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <Button
+                    android:id="@+id/btnActionCancel"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/btn_cancel"
+                    android:textColor="#E53935"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <Button
+                    android:id="@+id/btnActionApprove"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="#294669"
+                    android:text="@string/btn_approve"
+                    android:textColor="@color/white"
+                    android:textAllCaps="false"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    app:cornerRadius="8dp" />
+
             </LinearLayout>
 
         </LinearLayout>

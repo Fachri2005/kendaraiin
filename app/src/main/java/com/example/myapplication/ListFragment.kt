@@ -41,7 +41,6 @@ class ListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Perbaikan: Gunakan requireContext() langsung, jangan buat repository di sini
         val factory = ViewModelFactory(requireContext())
         viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
 
@@ -57,8 +56,8 @@ class ListFragment : Fragment() {
         isAdmin = userRole == "Admin"
 
         if (isAdmin) {
-            tvListTitle.text = "Daftar Unit Saya"
-            etSearch.hint = "Cari di unit saya..."
+            tvListTitle.text = getString(R.string.list_title_admin)
+            etSearch.hint = getString(R.string.list_search_hint_admin)
         }
 
         setupRecyclerView()
@@ -104,9 +103,12 @@ class ListFragment : Fragment() {
             }
         }
 
-        viewModel.error.observe(viewLifecycleOwner) { error ->
-            if (error != null) {
-                Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+        // PERBAIKAN: Menggunakan EventWrapper agar pesan error muncul dengan benar
+        viewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                errorResId?.let {
+                    Toast.makeText(context, getString(it), Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

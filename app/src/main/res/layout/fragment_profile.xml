@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Profil"
+        android:text="@string/profile_title"
         android:textColor="#000000"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -59,7 +59,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Nama Pengguna"
+        android:text="@string/guest_name"
         android:textColor="#000000"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="16dp"
-                android:text="Edit Profil"
+                android:text="@string/profile_edit"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
 
@@ -155,7 +155,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="16dp"
-                android:text="Pengaturan"
+                android:text="@string/settings_title"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
 
@@ -195,7 +195,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="16dp"
-                android:text="Pusat Bantuan"
+                android:text="@string/profile_help"
                 android:textSize="16sp"
                 android:textColor="#000000"/>
 
@@ -237,7 +237,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="16dp"
-                android:text="Keluar"
+                android:text="@string/profile_logout"
                 android:textColor="#E53935"
                 android:textStyle="bold"
                 android:textSize="16sp"/>

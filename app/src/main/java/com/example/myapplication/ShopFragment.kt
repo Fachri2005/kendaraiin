@@ -21,6 +21,9 @@ class ShopFragment : Fragment() {
     private lateinit var adapter: EventAdapter
     private var adminEmail: String? = null
 
+    // Referensi ke TextView agar mudah diperbarui
+    private var tvProductCount: TextView? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,6 +39,9 @@ class ShopFragment : Fragment() {
         userRepository = UserRepository(requireContext())
 
         adminEmail = arguments?.getString("admin_email")
+        
+        // Inisialisasi TextView
+        tvProductCount = view.findViewById(R.id.tvShopProductCount)
 
         val btnBack = view.findViewById<ImageView>(R.id.btnBackShop)
         btnBack.setOnClickListener {
@@ -84,7 +90,18 @@ class ShopFragment : Fragment() {
     }
 
     private fun loadAdminVehicles() {
+        // Ambil data dari repository
         val vehicles = vehicleRepository.getEventsByAdmin(adminEmail!!)
+        
+        // Update list di RecyclerView
         adapter.updateData(vehicles, false)
+        
+        // Update angka produk (Penting agar tidak 0)
+        tvProductCount?.text = vehicles.size.toString()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        tvProductCount = null // Hindari memory leak
     }
 }

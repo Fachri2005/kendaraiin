@@ -6,22 +6,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.myapplication.databinding.FragmentEditProfileBinding
 
 class EditProfileFragment : Fragment() {
 
+    private var _binding: FragmentEditProfileBinding? = null
+    private val binding get() = _binding!!
     private val userViewModel: UserViewModel by viewModels { ViewModelFactory(requireContext()) }
     private var selectedImageUri: Uri? = null
     private lateinit var pickImageLauncher: ActivityResultLauncher<Array<String>>
-    private lateinit var ivProfile: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +30,10 @@ class EditProfileFragment : Fragment() {
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     requireContext().contentResolver.takePersistableUriPermission(it, takeFlags)
                     selectedImageUri = it
-                    ivProfile.setImageURI(it)
+                    binding.ivEditProfile.setImageURI(it)
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    Toast.makeText(context, "Gagal mengambil izin gambar", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.error_image_permission), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -44,38 +43,32 @@ class EditProfileFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_edit_profile, container, false)
+    ): View {
+        _binding = FragmentEditProfileBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val btnBack = view.findViewById<ImageView>(R.id.btnBack)
-        val etName = view.findViewById<EditText>(R.id.etEditName)
-        val etEmail = view.findViewById<EditText>(R.id.etEditEmail)
-        val etPhone = view.findViewById<EditText>(R.id.etEditPhone)
-        val btnSave = view.findViewById<Button>(R.id.btnSave)
-        ivProfile = view.findViewById(R.id.ivEditProfile)
-
-        setupObservers(etName, etEmail, etPhone)
+        setupObservers()
 
         // Load current data via ViewModel
         userViewModel.getUserEmail()?.let { email ->
             userViewModel.fetchUser(email)
         }
 
-        view.findViewById<View>(R.id.cvEditProfileImage).setOnClickListener {
+        binding.cvEditProfileImage.setOnClickListener {
             pickImageLauncher.launch(arrayOf("image/*"))
         }
 
-        btnBack.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        btnSave.setOnClickListener {
-            val newName = etName.text.toString().trim()
-            val newPhone = etPhone.text.toString().trim()
+        binding.btnSave.setOnClickListener {
+            val newName = binding.etEditName.text.toString().trim()
+            val newPhone = binding.etEditPhone.text.toString().trim()
             val email = userViewModel.getUserEmail()
 
             if (newName.isNotEmpty() && email != null) {
@@ -89,37 +82,51 @@ class EditProfileFragment : Fragment() {
         }
     }
 
-    private fun setupObservers(etName: EditText, etEmail: EditText, etPhone: EditText) {
+    private fun setupObservers() {
         userViewModel.user.observe(viewLifecycleOwner) { user ->
             user?.let {
-                etName.setText(it.name)
-                etEmail.setText(it.email)
-                etPhone.setText(it.phone)
+                binding.etEditName.setText(it.name)
+                binding.etEditEmail.setText(it.email)
+                binding.etEditPhone.setText(it.phone)
                 if (it.imageUri.isNotEmpty()) {
                     try {
-                        ivProfile.setImageURI(Uri.parse(it.imageUri))
+                        val uri = Uri.parse(it.imageUri)
+                        requireContext().contentResolver.openInputStream(uri)?.use {
+                            binding.ivEditProfile.setImageURI(uri)
+                        }
                     } catch (e: Exception) {
-                        ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
+                        binding.ivEditProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
                     }
                 }
             }
         }
 
-        userViewModel.isSuccess.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(context, "Profil berhasil diperbarui", Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
+        // Poin 2: Menggunakan EventWrapper untuk event satu kali
+        userViewModel.isSuccess.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { success ->
+                if (success) {
+                    Toast.makeText(context, getString(R.string.profile_update_success), Toast.LENGTH_SHORT).show()
+                    findNavController().navigateUp()
+                }
             }
         }
 
-        userViewModel.error.observe(viewLifecycleOwner) { errorMsg ->
-            errorMsg?.let {
-                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        userViewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                errorResId?.let {
+                    Toast.makeText(context, getString(it), Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
         userViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            // Update UI state based on loading if needed
+            binding.btnSave.isEnabled = !isLoading
+            binding.btnSave.text = if (isLoading) "..." else getString(R.string.btn_save_changes)
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

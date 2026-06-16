@@ -78,7 +78,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Daftar Sebagai*"
+            android:text="@string/label_role"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -93,16 +93,19 @@
             app:hintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/labelRole">
+            app:layout_constraintTop_toBottomOf="@id/labelRole"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeColor="#E0E0E0">
 
             <AutoCompleteTextView
                 android:id="@+id/actvRole"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input_field"
-                android:hint="Pilih Role (Customer/Admin)"
+                android:hint="@string/hint_role"
                 android:inputType="none"
-                android:padding="16dp"
                 android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -235,16 +238,19 @@
             app:hintEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/labelGender">
+            app:layout_constraintTop_toBottomOf="@id/labelGender"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxStrokeColor="#E0E0E0">
 
             <AutoCompleteTextView
                 android:id="@+id/actvGender"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_input_field"
                 android:hint="@string/hint_jenis_kelamin"
                 android:inputType="none"
-                android:padding="16dp"
                 android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -270,6 +276,8 @@
             android:drawablePadding="8dp"
             android:drawableTint="@color/black"
             android:focusable="false"
+            android:clickable="true"
+            android:inputType="none"
             android:hint="@string/hint_tanggal_lahir"
             android:padding="16dp"
             android:textColor="@color/black"

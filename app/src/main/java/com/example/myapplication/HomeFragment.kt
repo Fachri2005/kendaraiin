@@ -17,7 +17,6 @@ import androidx.navigation.fragment.findNavController
 import com.example.myapplication.databinding.FragmentHomeBinding
 import com.example.myapplication.databinding.DialogFilterBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.slider.RangeSlider
 import java.text.NumberFormat
 import java.util.*
 
@@ -39,7 +38,7 @@ class HomeFragment : Fragment() {
     // Filter state
     private var selectedTypes = mutableSetOf<String>()
     private var selectedTransmissions = mutableSetOf<String>()
-    private var priceSortOrder: String? = null // "low_to_high" or "high_to_low"
+    private var priceSortOrder: String? = null
     private var minPrice: Float = 0f
     private var maxPrice: Float = 10000000f
 
@@ -75,7 +74,7 @@ class HomeFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
 
         val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userName = sharedPref.getString("user_name", "Pengguna")
+        val userName = sharedPref.getString("user_name", getString(R.string.guest_name))
         val userRole = sharedPref.getString("user_role", "Customer")
         userEmail = sharedPref.getString("user_email", "") ?: ""
         isAdmin = userRole == "Admin"
@@ -88,25 +87,20 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupUI(userName: String?) {
-        binding.tvWelcome.text = "Halo, $userName!"
+        binding.tvWelcome.text = getString(R.string.home_welcome, userName)
 
         if (isAdmin) {
             binding.layoutAdminDashboard.visibility = View.VISIBLE
             binding.cvFilterHome.visibility = View.GONE
-            binding.tvHeading.text = "Kelola bisnis\nkendaraan Anda"
-            binding.tvListTitle.text = "Manajemen Unit Anda"
-            
-            // Menggunakan ViewBinding camelCase
+            binding.tvHeading.text = getString(R.string.home_heading_admin)
+            binding.tvListTitle.text = getString(R.string.home_admin_list_title)
             binding.btnQuickAdd.setOnClickListener { showAddEditDialog() }
         } else {
             binding.layoutAdminDashboard.visibility = View.GONE
             binding.cvFilterHome.visibility = View.VISIBLE
-            binding.tvHeading.text = "Sewa kendaraan\nimpianmu hari ini"
-            binding.tvListTitle.text = "Rekomendasi Untukmu"
-            
-            binding.cvFilterHome.setOnClickListener {
-                showFilterDialog()
-            }
+            binding.tvHeading.text = getString(R.string.home_heading)
+            binding.tvListTitle.text = getString(R.string.home_recommendation_user)
+            binding.cvFilterHome.setOnClickListener { showFilterDialog() }
         }
         
         binding.tvSeeAll.setOnClickListener {
@@ -122,7 +116,6 @@ class HomeFragment : Fragment() {
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        // Sync UI dengan state saat ini
         dialogBinding.chipMobil.isChecked = selectedTypes.contains("Mobil")
         dialogBinding.chipMotor.isChecked = selectedTypes.contains("Motor")
         dialogBinding.chipMatic.isChecked = selectedTransmissions.contains("Matic")
@@ -131,7 +124,6 @@ class HomeFragment : Fragment() {
         dialogBinding.priceSlider.setValues(minPrice, maxPrice)
         updatePriceLabel(dialogBinding.tvPriceRangeValue, minPrice, maxPrice)
 
-        // Listener Slider
         dialogBinding.priceSlider.addOnChangeListener { slider, _, _ ->
             updatePriceLabel(dialogBinding.tvPriceRangeValue, slider.values[0], slider.values[1])
         }
@@ -141,7 +133,6 @@ class HomeFragment : Fragment() {
             "high_to_low" -> dialogBinding.rbPriceHigh.isChecked = true
         }
 
-        // Terapkan Filter
         dialogBinding.btnApply.setOnClickListener {
             selectedTypes.clear()
             if (dialogBinding.chipMobil.isChecked) selectedTypes.add("Mobil")
@@ -164,7 +155,6 @@ class HomeFragment : Fragment() {
             dialog.dismiss()
         }
 
-        // Reset ke Awal Semula
         dialogBinding.btnReset.setOnClickListener {
             selectedTypes.clear()
             selectedTransmissions.clear()
@@ -194,27 +184,20 @@ class HomeFragment : Fragment() {
         }
 
         if (!isAdmin) {
-            // Filter Kategori
             if (selectedTypes.isNotEmpty()) {
                 filtered = filtered.filter { event ->
                     selectedTypes.any { type -> event.vehicleType?.equals(type, ignoreCase = true) == true }
                 }
             }
-
-            // Filter Transmisi
             if (selectedTransmissions.isNotEmpty()) {
                 filtered = filtered.filter { event ->
                     selectedTransmissions.any { trans -> event.transmission?.equals(trans, ignoreCase = true) == true }
                 }
             }
-
-            // Filter Harga
             filtered = filtered.filter { event ->
                 val price = parsePrice(event.price)
                 price >= minPrice && price <= maxPrice
             }
-
-            // Sorting
             if (priceSortOrder != null) {
                 filtered = when (priceSortOrder) {
                     "low_to_high" -> filtered.sortedBy { parsePrice(it.price) }
@@ -229,7 +212,7 @@ class HomeFragment : Fragment() {
         if (isAdmin) {
             val myUnits = allEvents.filter { it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) }
             binding.tvTotalUnit.text = myUnits.size.toString()
-            binding.tvTotalRented.text = myUnits.count { it.isRegistered }.toString()
+            binding.tvTotalRented.text = myUnits.count { it.effectiveStatus == "approved" || it.effectiveStatus == "pending" }.toString()
         }
     }
 
@@ -261,17 +244,31 @@ class HomeFragment : Fragment() {
             onDeleteClick = { event -> if (isAdmin) showDeleteConfirmation(event) } 
         )
         binding.rvHomeVehicles.adapter = eventAdapter
-        updateVehicleList()
     }
 
     private fun observeViewModel() {
         viewModel.events.observe(viewLifecycleOwner) {
             updateVehicleList()
         }
+        
+        // Poin 3: Menambahkan observasi error
+        viewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                errorResId?.let {
+                    Toast.makeText(context, getString(it), Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun showAdminOptionsDialog(event: Event) {
-        val options = arrayOf("Lihat Detail", "Edit Unit", "Hapus Unit")
+        // Poin 1: Perbaikan Menu dan Aksi Admin
+        val options = arrayOf(
+            getString(R.string.home_see_all), 
+            getString(R.string.title_edit_vehicle), 
+            "Hapus Kendaraan", 
+            getString(R.string.btn_batal)
+        )
         AlertDialog.Builder(requireContext())
             .setTitle(event.name)
             .setItems(options) { _, which ->
@@ -279,6 +276,7 @@ class HomeFragment : Fragment() {
                     0 -> findNavController().navigate(R.id.navigation_detail, Bundle().apply { putInt("vehicle_id", event.id) })
                     1 -> showAddEditDialog(event)
                     2 -> showDeleteConfirmation(event)
+                    // Index 3 (Batal) otomatis menutup dialog
                 }
             }
             .show()
@@ -286,7 +284,7 @@ class HomeFragment : Fragment() {
 
     private fun showAddEditDialog(event: Event? = null) {
         val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle(if (event != null) "Edit Kendaraan" else "Tambah Kendaraan Baru")
+        builder.setTitle(if (event != null) getString(R.string.title_edit_vehicle) else getString(R.string.title_add_vehicle))
 
         val layout = LayoutInflater.from(context).inflate(R.layout.dialog_add_event, null)
         val etName = layout.findViewById<EditText>(R.id.etName)
@@ -314,15 +312,19 @@ class HomeFragment : Fragment() {
             actvType.setText(event.vehicleType, false)
             actvTransmission.setText(event.transmission, false)
             if (!event.imageUri.isNullOrEmpty()) {
-                selectedImageUri = Uri.parse(event.imageUri)
-                ivSelectedImage.setImageURI(selectedImageUri)
+                try {
+                    val uri = Uri.parse(event.imageUri)
+                    ivSelectedImage.setImageURI(uri)
+                } catch (e: Exception) {
+                    ivSelectedImage.setImageResource(android.R.drawable.ic_menu_gallery)
+                }
             }
         }
 
         btnPickImage.setOnClickListener { pickImageLauncher.launch(arrayOf("image/*")) }
 
         builder.setView(layout)
-        builder.setPositiveButton("Simpan") { _, _ ->
+        builder.setPositiveButton(getString(R.string.btn_apply)) { _, _ ->
             val name = etName.text.toString().trim()
             val price = etPrice.text.toString().trim()
             val type = actvType.text.toString().trim()
@@ -349,18 +351,19 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        builder.setNegativeButton("Batal", null)
+        builder.setNegativeButton(getString(R.string.btn_batal), null)
         builder.show()
     }
 
     private fun showDeleteConfirmation(event: Event) {
+        // Poin 2: Perbaikan Judul Dialog
         AlertDialog.Builder(requireContext())
             .setTitle("Hapus Kendaraan")
             .setMessage("Apakah Anda yakin ingin menghapus ${event.name}?")
             .setPositiveButton("Hapus") { _, _ ->
                 viewModel.deleteEvent(event.id, userEmail) { refreshData() }
             }
-            .setNegativeButton("Batal", null)
+            .setNegativeButton(getString(R.string.btn_batal), null)
             .show()
     }
 

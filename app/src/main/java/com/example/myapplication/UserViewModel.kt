@@ -11,14 +11,14 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     private val _user = MutableLiveData<User?>()
     val user: LiveData<User?> get() = _user
 
-    private val _isSuccess = MutableLiveData<Boolean>()
-    val isSuccess: LiveData<Boolean> get() = _isSuccess
+    private val _isSuccess = MutableLiveData<EventWrapper<Boolean>>()
+    val isSuccess: LiveData<EventWrapper<Boolean>> get() = _isSuccess
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> get() = _isLoading
 
-    private val _error = MutableLiveData<String?>()
-    val error: LiveData<String?> get() = _error
+    private val _error = MutableLiveData<EventWrapper<Int?>>()
+    val error: LiveData<EventWrapper<Int?>> get() = _error
 
     fun login(email: String, password: String) {
         _isLoading.value = true
@@ -28,12 +28,12 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 if (result != null) {
                     repository.saveLoginSession(result)
                     _user.postValue(result)
-                    _error.postValue(null)
+                    _error.postValue(EventWrapper(null))
                 } else {
-                    _error.postValue("Login Gagal! Cek Email/Password atau Koneksi Server.")
+                    _error.postValue(EventWrapper(R.string.error_login_failed))
                 }
             } catch (e: Exception) {
-                _error.postValue("Terjadi kesalahan: ${e.message}")
+                _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
             }
@@ -46,14 +46,15 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             try {
                 val success = repository.registerUser(user)
                 if (success) {
+                    // Simpan sesi otomatis setelah registrasi berhasil
                     repository.saveLoginSession(user)
-                    _isSuccess.postValue(true)
-                    _error.postValue(null)
+                    _isSuccess.postValue(EventWrapper(true))
+                    _error.postValue(EventWrapper(null))
                 } else {
-                    _error.postValue("Registrasi Gagal! Email mungkin sudah terdaftar.")
+                    _error.postValue(EventWrapper(R.string.error_register_failed))
                 }
             } catch (e: Exception) {
-                _error.postValue("Terjadi kesalahan: ${e.message}")
+                _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
             }
@@ -67,7 +68,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 val result = repository.getUserByEmail(email)
                 _user.postValue(result)
             } catch (e: Exception) {
-                _error.postValue("Gagal mengambil data: ${e.message}")
+                _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
             }
@@ -80,8 +81,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             try {
                 val success = repository.updateUser(email, name, phone, imageUri)
                 if (success) {
-                    _isSuccess.postValue(true)
-                    // Update local session
+                    _isSuccess.postValue(EventWrapper(true))
                     val currentUser = _user.value
                     if (currentUser != null) {
                         val updatedUser = currentUser.copy(name = name, phone = phone, imageUri = imageUri)
@@ -89,10 +89,48 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                         _user.postValue(updatedUser)
                     }
                 } else {
-                    _error.postValue("Gagal memperbarui profil.")
+                    _error.postValue(EventWrapper(R.string.error_data_not_found))
                 }
             } catch (e: Exception) {
-                _error.postValue("Terjadi kesalahan: ${e.message}")
+                _error.postValue(EventWrapper(R.string.error_data_not_found))
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
+    fun changePassword(email: String, currentPass: String, newPass: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val response = repository.changePassword(email, currentPass, newPass)
+                if (response?.success == true) {
+                    _isSuccess.postValue(EventWrapper(true))
+                    _error.postValue(EventWrapper(null))
+                } else {
+                    _error.postValue(EventWrapper(R.string.error_current_password_wrong))
+                }
+            } catch (e: Exception) {
+                _error.postValue(EventWrapper(R.string.error_data_not_found))
+            } finally {
+                _isLoading.postValue(false)
+            }
+        }
+    }
+
+    fun deleteAccount(email: String) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val success = repository.deleteAccount(email)
+                if (success) {
+                    repository.logout()
+                    _isSuccess.postValue(EventWrapper(true))
+                } else {
+                    _error.postValue(EventWrapper(R.string.error_data_not_found))
+                }
+            } catch (e: Exception) {
+                _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
             }
@@ -100,14 +138,18 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     }
 
     fun loginAsGuest() {
-        val guestUser = User(name = "Tamu", email = "guest@kendaraiin.com", password = "", role = "Customer")
-        repository.saveLoginSession(guestUser)
-        _user.value = guestUser
+        viewModelScope.launch {
+            val guestUser = User(name = "Tamu", email = "guest@kendaraiin.com", password = "", role = "Customer")
+            repository.saveLoginSession(guestUser)
+            _user.postValue(guestUser)
+        }
     }
 
     fun logout() {
-        repository.logout()
-        _user.value = null
+        viewModelScope.launch {
+            repository.logout()
+            _user.postValue(null)
+        }
     }
 
     fun isLoggedIn(): Boolean = repository.isLoggedIn()

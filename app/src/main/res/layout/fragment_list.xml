@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
-            app:title="Cari Kendaraan"
+            app:title="@string/list_title"
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -72,7 +72,7 @@
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
                             android:background="@android:color/transparent"
-                            android:hint="Cari kendaraan atau nama toko..."
+                            android:hint="@string/list_search_hint"
                             android:paddingVertical="12dp"
                             android:textSize="14sp"
                             android:inputType="text"
@@ -86,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="24dp"
-                    android:text="Hasil Pencarian"
+                    android:text="@string/list_search_results"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />

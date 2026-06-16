@@ -2,8 +2,8 @@
     <string name="app_name">Kendaraiin</string>
     <string name="tab_masuk">Login</string>
     <string name="tab_register">Register</string>
-    <string name="title_login">Yuk, lanjutkan perjalananmu!</string>
-    <string name="subtitle_login">Tinggal login, dan kita langsung jalan bareng lagi!</string>
+    <string name="title_login">Let\'s continue your journey!</string>
+    <string name="subtitle_login">Just login, and we\'ll be on our way together again!</string>
     <string name="label_email">Email*</string>
     <string name="hint_email">Enter Email…</string>
     <string name="label_password">Password*</string>
@@ -11,14 +11,14 @@
     <string name="forgot_password">Forgot Password?</string>
     <string name="btn_masuk">Login Now</string>
     <string name="text_or">Or</string>
-    <string name="btn_google">Login With Google</string>
+    <string name="btn_google">Login with Google</string>
     <string name="btn_guest">Guest Mode</string>
 
     <!-- Register Strings -->
-    <string name="title_register">Daftar dulu, biar makin gampang sewa kendaraan</string>
-    <string name="subtitle_register">Buat akunmu dan nikmati kemudahan sewa kendaraan kapan aja, di mana aja.</string>
-    <string name="info_security_title">Keamanan Data Pribadi</string>
-    <string name="info_security_desc">Data Anda terlindungi sepenuhnya berdasarkan UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (PDP).\n\nLengkapi data di bawah untuk melanjutkan proses sewa.</string>
+    <string name="title_register">Register first to make it easier to rent a vehicle</string>
+    <string name="subtitle_register">Create your account and enjoy the convenience of renting a vehicle anytime, anywhere.</string>
+    <string name="info_security_title">Personal Data Security</string>
+    <string name="info_security_desc">Your data is fully protected based on Law No. 27 of 2022 concerning Personal Data Protection (PDP).\n\nComplete the data below to continue the rental process.</string>
     <string name="label_nama_lengkap">Full Name*</string>
     <string name="hint_nama_lengkap">Enter full name…</string>
     <string name="btn_verifikasi">Verify</string>
@@ -28,38 +28,36 @@
     <string name="hint_no_telp_darurat">Enter emergency phone number…</string>
     <string name="label_jenis_kelamin">Gender</string>
     <string name="hint_jenis_kelamin">Select Gender…</string>
-    <string name="label_tanggal_lahir">Birth Date*</string>
-    <string name="hint_tanggal_lahir">Select Birth Date…</string>
+    <string name="label_tanggal_lahir">Date of Birth*</string>
+    <string name="hint_tanggal_lahir">Select Date of Birth…</string>
     <string name="label_konfirmasi_password">Confirm Password*</string>
     <string name="btn_lanjut">Continue</string>
-    <string name="btn_daftar_google">Register With Google</string>
+    <string name="btn_daftar_google">Register with Google</string>
     <string name="register_success">Registration Successful!</string>
 
-    <!-- Roles -->
+    <!-- Roles & Genders -->
     <string name="role_customer">Customer</string>
     <string name="role_admin">Admin</string>
     <string name="label_role">Register As*</string>
     <string name="hint_role">Select Role (Customer/Admin)</string>
-
-    <!-- Genders -->
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
 
     <!-- Errors -->
-    <string name="error_empty_fields">Please complete all fields!</string>
+    <string name="error_empty_fields">Please complete all data!</string>
     <string name="error_invalid_email">Invalid email format!</string>
     <string name="error_password_short">Password must be at least 6 characters!</string>
     <string name="error_password_mismatch">Passwords do not match!</string>
     <string name="error_login_failed">Login Failed! Check Email/Password or Server Connection.</string>
-    <string name="error_register_failed">Registration Failed! Email might already be registered.</string>
+    <string name="error_register_failed">Registration Failed! Email may already be registered.</string>
     <string name="error_data_not_found">Data not found.</string>
     <string name="error_must_login">Please login first</string>
-    <string name="error_no_whatsapp">WhatsApp not installed</string>
+    <string name="error_no_whatsapp">WhatsApp is not installed</string>
     <string name="error_image_permission">Failed to get image permission</string>
 
     <!-- Rental Form -->
     <string name="rental_form_title">Rental Form</string>
-    <string name="rental_form_subtitle">Please complete the rental data below.</string>
+    <string name="rental_form_subtitle">Please complete the rental details below.</string>
     <string name="label_renter_name">Renter Name</string>
     <string name="label_start_date">Rental Start Date*</string>
     <string name="hint_select_date">Select date</string>
@@ -103,11 +101,11 @@
     <string name="home_location">📍 Jakarta, Indonesia</string>
     <string name="home_heading">Rent your\ndream vehicle today</string>
     <string name="home_heading_admin">Manage your\nvehicle business</string>
-    <string name="home_search_hint">Search your favorite vehicle…</string>
+    <string name="home_search_hint">Find your favorite vehicle…</string>
     <string name="home_total_unit">Total Units</string>
     <string name="home_rented">Rented</string>
     <string name="home_btn_add_unit">+ Add New Unit</string>
-    <string name="home_category_title">Rental Categories</string>
+    <string name="home_category_title">Rental Category</string>
     <string name="home_see_all">See All</string>
     <string name="home_recommendation_title">Rental Recommendations</string>
     <string name="home_recommendation_user">Recommended for You</string>
@@ -131,7 +129,7 @@
     <string name="ticket_empty_title">No History Yet</string>
     <string name="ticket_empty_title_admin">No Orders Yet</string>
     <string name="ticket_empty_desc">Rental history will appear here.</string>
-    <string name="ticket_empty_desc_admin">Click \'Pending\' tab to see new orders.</string>
+    <string name="ticket_empty_desc_admin">Click the \'Pending\' tab to see new orders.</string>
     <string name="ticket_process_success">Successfully processed order</string>
 
     <!-- Profile Strings -->
@@ -139,7 +137,7 @@
     <string name="profile_edit">Edit Profile</string>
     <string name="profile_help">Help Center</string>
     <string name="profile_logout">Logout</string>
-    <string name="profile_name_default">Username</string>
+    <string name="profile_name_default">User Name</string>
     <string name="profile_change_photo">Change Photo</string>
     <string name="profile_update_success">Profile updated successfully</string>
 
@@ -165,7 +163,7 @@
     <string name="seats_format">%1$s Seats</string>
     <string name="unknown_name">Unknown Name</string>
     <string name="label_renter">Renter: %1$s</string>
-    <string name="label_rental_date">Rent: %1$s</string>
+    <string name="label_rental_date">Rental: %1$s</string>
     <string name="btn_approve">Approve</string>
     <string name="btn_reject">Reject</string>
     <string name="btn_cancel">Cancel</string>
@@ -176,18 +174,18 @@
     <string name="btn_sewa_now">Rent Now</string>
     <string name="general_renter">General Renter</string>
     <string name="label_rental_status">Rental Status: %1$s</string>
-    <string name="msg_approve_success">Rental Approved Successfully!</string>
+    <string name="msg_approve_success">Rental Successfully Approved!</string>
     <string name="msg_reject_success">Rental Rejected</string>
     <string name="btn_cancel_rental">Cancel Rental</string>
     <string name="msg_cancel_success">Your rental has been canceled</string>
     <string name="status_processing">Processing</string>
-    <string name="status_rented">Already Rented</string>
+    <string name="status_rented">Rented</string>
     <string name="label_vehicle_photo">Vehicle Photo</string>
     <string name="btn_pick_photo">Pick Photo from Gallery</string>
     <string name="title_add_vehicle">Add New Vehicle</string>
     <string name="title_edit_vehicle">Edit Vehicle</string>
-    <string name="hint_vehicle_name">Vehicle Name (Example: Toyota Avanza 2022)</string>
-    <string name="hint_vehicle_price">Rental Price (Example: Rp 450.000)</string>
+    <string name="hint_vehicle_name">Vehicle Name (e.g., Toyota Avanza 2022)</string>
+    <string name="hint_vehicle_price">Rental Price (e.g., Rp 450.000)</string>
     <string name="label_type">Type</string>
     <string name="label_transmission">Transmission</string>
     <string name="label_capacity">Capacity (7 Seats)</string>

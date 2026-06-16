@@ -8,9 +8,10 @@ class ViewModelFactory(private val context: Context) : ViewModelProvider.Factory
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(EventViewModel::class.java) -> {
-                val repository = EventRepository(context)
+                val eventRepository = EventRepository(context)
+                val userRepository = UserRepository(context)
                 @Suppress("UNCHECKED_CAST")
-                EventViewModel(repository) as T
+                EventViewModel(eventRepository, userRepository, context.applicationContext) as T
             }
             modelClass.isAssignableFrom(UserViewModel::class.java) -> {
                 val repository = UserRepository(context)

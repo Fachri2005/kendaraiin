@@ -3,10 +3,16 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="primary_blue">#294669</color>
-    <color name="green_primary">#294669</color> <!-- Diubah ke biru agar konsisten -->
+    <color name="green_primary">#294669</color>
     <color name="gray_text">#757575</color>
     <color name="gray_border">#E0E0E0</color>
     <color name="gray_bg">#F8F9FA</color>
     <color name="blue_info_bg">#E3F2FD</color>
     <color name="blue_info_text">#1976D2</color>
+
+    <!-- Status Colors -->
+    <color name="status_approved">#4CAF50</color>
+    <color name="status_canceled">#E53935</color>
+    <color name="status_completed">#2196F3</color>
+    <color name="status_pending">#FFA000</color>
 </resources>

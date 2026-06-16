@@ -11,23 +11,37 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_chevron_right"
+            android:rotation="180"
+            app:tint="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/btn_back_desc" />
+
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Formulir Penyewaan"
+            android:layout_marginTop="8dp"
+            android:text="@string/rental_form_title"
             android:textColor="@color/black"
             android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@id/btnBack" />
 
         <TextView
             android:id="@+id/tvSubtitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Silakan lengkapi data penyewaan di bawah ini."
+            android:text="@string/rental_form_subtitle"
             android:textColor="@color/gray_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -39,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Nama Penyewa"
+            android:text="@string/label_renter_name"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -64,7 +78,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Tanggal Mulai Sewa*"
+            android:text="@string/label_start_date"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +93,7 @@
             android:drawableEnd="@android:drawable/ic_menu_my_calendar"
             android:drawableTint="@color/black"
             android:focusable="false"
-            android:hint="Pilih tanggal"
+            android:hint="@string/hint_select_date"
             android:padding="16dp"
             android:textColor="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
@@ -92,7 +106,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Durasi Sewa (Hari)*"
+            android:text="@string/label_duration"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -104,7 +118,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Contoh: 3"
+            android:hint="@string/hint_duration_example"
             android:inputType="number"
             android:padding="16dp"
             android:textColor="@color/black"
@@ -118,7 +132,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Lokasi Penjemputan*"
+            android:text="@string/label_pickup_location"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -130,7 +144,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_input_field"
-            android:hint="Masukkan alamat lengkap..."
+            android:hint="@string/hint_pickup_address"
             android:padding="16dp"
             android:textColor="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
@@ -157,7 +171,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ringkasan Pembayaran"
+                    android:text="@string/payment_summary"
                     android:textStyle="bold"
                     android:textColor="@color/black" />
 
@@ -170,7 +184,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Harga per Hari" />
+                        android:text="@string/price_per_day" />
                     <TextView
                         android:id="@+id/tvPricePerDay"
                         android:layout_width="wrap_content"
@@ -188,7 +202,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Total Biaya"
+                        android:text="@string/total_price"
                         android:textStyle="bold" />
                     <TextView
                         android:id="@+id/tvTotalPrice"
@@ -208,7 +222,7 @@
             android:layout_marginTop="24dp"
             android:backgroundTint="#294669"
             android:padding="16dp"
-            android:text="Konfirmasi Sewa"
+            android:text="@string/btn_confirm_rental"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textStyle="bold"

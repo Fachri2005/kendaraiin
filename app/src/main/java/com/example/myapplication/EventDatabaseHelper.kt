@@ -9,7 +9,7 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
 
     companion object {
         private const val DATABASE_NAME = "kendaraiin.db"
-        private const val DATABASE_VERSION = 10 // Upgraded for rental fields
+        private const val DATABASE_VERSION = 11 // Upgraded to include rental_status
         
         const val TABLE_NAME = "events"
         const val COLUMN_ID = "id"
@@ -25,10 +25,11 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
         const val COLUMN_LOCATION = "location"
         const val COLUMN_RENTER_EMAIL = "renter_email"
         
-        // New columns for rental form
+        // Rental columns
         const val COLUMN_RENTAL_START_DATE = "rental_start_date"
         const val COLUMN_RENTAL_DURATION = "rental_duration"
         const val COLUMN_PICKUP_LOCATION = "pickup_location"
+        const val COLUMN_RENTAL_STATUS = "rental_status" // New column
 
         const val TABLE_USERS = "users"
         const val COLUMN_USER_ID = "user_id"
@@ -56,7 +57,8 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
                 "$COLUMN_RENTER_EMAIL TEXT," +
                 "$COLUMN_RENTAL_START_DATE TEXT," +
                 "$COLUMN_RENTAL_DURATION INTEGER," +
-                "$COLUMN_PICKUP_LOCATION TEXT)")
+                "$COLUMN_PICKUP_LOCATION TEXT," +
+                "$COLUMN_RENTAL_STATUS TEXT)")
         db.execSQL(createEventsTable)
 
         val createUsersTable = ("CREATE TABLE $TABLE_USERS (" +
@@ -77,6 +79,9 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
             db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTAL_START_DATE TEXT")
             db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTAL_DURATION INTEGER")
             db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_PICKUP_LOCATION TEXT")
+        }
+        if (oldVersion < 11) {
+            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTAL_STATUS TEXT")
         }
     }
 

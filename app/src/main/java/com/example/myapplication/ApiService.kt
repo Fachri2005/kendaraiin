@@ -55,7 +55,24 @@ interface ApiService {
         @Field("image_uri") imageUri: String
     ): Response<ApiResponse<Unit>>
 
-    // Rental API - Samakan dengan $_POST di events.php
+    @FormUrlEncoded
+    @POST("auth.php")
+    suspend fun changePassword(
+        @Query("action") action: String,
+        @Field("email") email: String,
+        @Field("current_password") currentPass: String,
+        @Field("new_password") newPass: String
+    ): Response<ApiResponse<Unit>>
+
+    // Hapus Akun
+    @FormUrlEncoded
+    @POST("auth.php")
+    suspend fun deleteAccount(
+        @Query("action") action: String,
+        @Field("email") email: String
+    ): Response<ApiResponse<Unit>>
+
+    // Rental API
     @FormUrlEncoded
     @POST("events.php")
     suspend fun rentVehicle(
@@ -65,5 +82,15 @@ interface ApiService {
         @Field("start_date") start_date: String,
         @Field("duration") duration: Int,
         @Field("pickup_location") pickup_location: String
+    ): Response<ApiResponse<Unit>>
+
+    @FormUrlEncoded
+    @POST("events.php")
+    suspend fun updateRentalStatus(
+        @Query("action") action: String,
+        @Field("id") id: Int,
+        @Field("rental_status") rentalStatus: String,
+        @Field("status") status: String,
+        @Field("is_registered") isRegistered: Int
     ): Response<ApiResponse<Unit>>
 }

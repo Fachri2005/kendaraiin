@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F8F8"
@@ -17,26 +18,18 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="@android:color/white"
-            android:elevation="2dp">
+            android:elevation="2dp"
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:navigationIconTint="#000000">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Pengaturan"
+                android:text="@string/settings_title"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:textStyle="bold"/>
-
-            <ImageView
-                android:id="@+id/ivProfile"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="16dp"
-                android:src="@android:drawable/ic_menu_myplaces"
-                app:tint="#1F3558"
-                android:contentDescription="@null" />
         </androidx.appcompat.widget.Toolbar>
 
         <!-- AKUN -->
@@ -45,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
-            android:text="Akun"
+            android:text="@string/account_label"
             android:textColor="#1F3558"
             android:textStyle="bold"/>
 
@@ -60,39 +53,16 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <!-- Edit Profil -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_menu_edit"
-                        android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:text="Edit Profil"/>
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right"
-                        android:contentDescription="@null" />
-                </LinearLayout>
-
                 <!-- Ganti Password -->
                 <LinearLayout
+                    android:id="@+id/btnChangePassword"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp">
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
                     <ImageView
                         android:layout_width="20dp"
@@ -105,34 +75,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Ganti Kata Sandi"/>
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_chevron_right"
-                        android:contentDescription="@null" />
-                </LinearLayout>
-
-                <!-- Akun Terhubung -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/ic_menu_share"
-                        android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="16dp"
-                        android:text="Akun Terhubung"/>
+                        android:text="@string/change_password"/>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -149,7 +92,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Preferensi"
+            android:text="@string/preferences_label"
             android:textColor="#1F3558"
             android:textStyle="bold"/>
 
@@ -182,31 +125,37 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="16dp"
-                        android:text="Notifikasi"/>
+                        android:text="@string/notifications"/>
 
                     <Switch
                         android:id="@+id/switchNotification"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content"
+                        tools:ignore="UseSwitchCompatOrMaterialXml" />
                 </LinearLayout>
 
                 <!-- Bahasa -->
                 <LinearLayout
+                    android:id="@+id/btnChangeLanguage"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp">
+                    android:paddingHorizontal="16dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Bahasa"/>
+                        android:text="@string/language"/>
 
                     <TextView
+                        android:id="@+id/tvCurrentLanguage"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="English"
+                        android:text="@string/current_language"
                         android:textColor="#999999"/>
 
                 </LinearLayout>
@@ -219,7 +168,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:text="Zona Bahaya"
+            android:text="@string/danger_zone"
             android:textColor="#E53935"
             android:textStyle="bold"/>
 
@@ -231,10 +180,14 @@
             app:cardBackgroundColor="#FFF3F3">
 
             <LinearLayout
+                android:id="@+id/btnDeleteAccount"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground">
 
                 <ImageView
                     android:layout_width="20dp"
@@ -248,7 +201,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="16dp"
-                    android:text="Hapus Akun"
+                    android:text="@string/delete_account"
                     android:textColor="#E53935"/>
 
             </LinearLayout>

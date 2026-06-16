@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:layout_marginTop="64dp"
-            android:text="Halo, Pengguna!"
+            android:text="@string/home_welcome_default"
             android:textColor="@color/white"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -40,7 +40,7 @@
             android:id="@+id/tv_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📍 Jakarta, Indonesia"
+            android:text="@string/home_location"
             android:textColor="@color/white"
             android:textSize="11sp"
             app:layout_constraintStart_toStartOf="@id/tv_welcome"
@@ -75,7 +75,7 @@
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="32dp"
             android:paddingBottom="48dp"
-            android:text="Sewa kendaraan\nimpianmu hari ini"
+            android:text="@string/home_heading"
             android:textColor="@color/white"
             android:textSize="28sp"
             android:textStyle="bold"
@@ -107,7 +107,7 @@
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Unit" android:textSize="12sp" android:textColor="#616161" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/home_total_unit" android:textSize="12sp" android:textColor="#616161" />
                         <TextView android:id="@+id/tv_total_unit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/black" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -120,7 +120,7 @@
                     app:cardCornerRadius="16dp"
                     app:cardElevation="2dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Disewa" android:textSize="12sp" android:textColor="#616161" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/home_rented" android:textSize="12sp" android:textColor="#616161" />
                         <TextView android:id="@+id/tv_total_rented" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textSize="22sp" android:textStyle="bold" android:textColor="#E65100" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
@@ -131,7 +131,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="16dp"
-                android:text="+ Tambah Unit Baru"
+                android:text="@string/home_btn_add_unit"
                 android:textAllCaps="false"
                 android:backgroundTint="@color/primary_blue"
                 android:textColor="@color/white"
@@ -161,7 +161,7 @@
                     android:id="@+id/tv_list_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Rekomendasi Sewa"
+                    android:text="@string/home_recommendation_title"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -171,7 +171,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:text="Lihat Semua"
+                    android:text="@string/home_see_all"
                     android:textColor="@color/primary_blue"
                     android:textSize="12sp"
                     android:textStyle="bold" />

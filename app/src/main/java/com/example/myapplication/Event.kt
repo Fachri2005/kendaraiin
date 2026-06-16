@@ -1,10 +1,6 @@
 package com.example.myapplication
 
 import com.google.gson.annotations.SerializedName
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 data class Event(
     val id: Int = 0,
@@ -25,49 +21,39 @@ data class Event(
     @SerializedName("renter_email")
     val renterEmail: String? = null,
     
-    // Tambahan untuk Form Sewa
     @SerializedName("rental_start_date")
     val rentalStartDate: String? = null,
     @SerializedName("rental_duration")
     val rentalDuration: Int? = null,
     @SerializedName("pickup_location")
-    val pickupLocation: String? = null
+    val pickupLocation: String? = null,
+
+    @SerializedName(value = "rental_status", alternate = ["status", "rentalStatus", "status_sewa"])
+    val rentalStatus: String? = null
 ) {
     /**
-     * Cek apakah kendaraan benar-benar masih dalam masa sewa.
-     * Jika sudah lewat tanggal berakhir, dianggap TIDAK terdaftar (Tersedia).
+     * Mendapatkan status yang sudah diolah secara pintar.
+     * Mengutamakan data rentalStatus, lalu fallback ke isRegistered.
      */
-    val isAvailable: Boolean
+    val effectiveStatus: String
         get() {
-            // Jika memang dari awal tidak disewa
-            if (!isRegistered) return true
+            val s = rentalStatus?.toString()?.lowercase()?.trim() ?: ""
             
-            // Jika data sewa tidak lengkap, anggap tersedia (safety check)
-            if (rentalStartDate.isNullOrEmpty() || rentalDuration == null) return true
+            // Jika tidak ada email penyewa, maka kendaraan harusnya berstatus tersedia (kosong)
+            if (renterEmail.isNullOrEmpty()) return ""
 
-            return try {
-                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val startDate = sdf.parse(rentalStartDate) ?: return true
-                
-                val calendar = Calendar.getInstance()
-                calendar.time = startDate
-                calendar.add(Calendar.DAY_OF_YEAR, rentalDuration)
-                val endDate = calendar.time
-                
-                // Jika waktu sekarang sudah melewati (after) end date, maka tersedia (true)
-                val now = Date()
-                now.after(endDate) 
-            } catch (e: Exception) {
-                true // Jika error parsing, anggap tersedia
+            return when (s) {
+                "approved", "1", "setuju", "sukses", "berhasil", "active" -> "approved"
+                "canceled", "2", "rejected", "tolak", "batal" -> "canceled"
+                "completed", "3", "finished", "selesai" -> "completed"
+                "pending", "0", "menunggu", "wait", "" -> "pending"
+                else -> s
             }
         }
-    
-    /**
-     * Mendapatkan status isRegistered yang "cerdas" (memperhitungkan waktu).
-     */
-    fun getEffectiveIsRegistered(): Boolean {
-        // Jika isRegistered true tapi waktu sudah habis, kembalikan false
-        if (isRegistered && isAvailable) return false
-        return isRegistered
-    }
+
+    val isAvailable: Boolean
+        get() {
+            val status = effectiveStatus
+            return status != "pending" && status != "approved"
+        }
 }

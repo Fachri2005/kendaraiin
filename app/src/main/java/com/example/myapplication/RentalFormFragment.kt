@@ -24,7 +24,7 @@ class RentalFormFragment : Fragment() {
     private val eventViewModel: EventViewModel by viewModels { ViewModelFactory(requireContext()) }
     
     private var vehicleId: Int = -1
-    private var vehiclePrice: Int = 0
+    private var vehiclePrice: Long = 0
     private var vehicleName: String = ""
 
     override fun onCreateView(
@@ -39,7 +39,9 @@ class RentalFormFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         vehicleId = arguments?.getInt("vehicle_id") ?: -1
-        vehiclePrice = arguments?.getString("vehicle_price")?.replace(Regex("[^0-9]"), "")?.toIntOrNull() ?: 0
+        // Improved price parsing: handle potentially large numbers and non-digit characters
+        val rawPriceString = arguments?.getString("vehicle_price") ?: "0"
+        vehiclePrice = rawPriceString.replace(Regex("[^0-9]"), "").toLongOrNull() ?: 0
         vehicleName = arguments?.getString("vehicle_name") ?: ""
 
         val btnBack = view.findViewById<ImageButton>(R.id.btnBack)
@@ -76,17 +78,19 @@ class RentalFormFragment : Fragment() {
             }
         }
 
-        // Observe rental process
-        eventViewModel.rentalSuccess.observe(viewLifecycleOwner) { success ->
-            if (success) {
-                Toast.makeText(context, "Berhasil menyewa $vehicleName!", Toast.LENGTH_SHORT).show()
-                findNavController().popBackStack(R.id.navigation_home, false)
+        // Observe rental process using EventWrapper to prevent duplicate triggers
+        eventViewModel.rentalSuccess.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { success ->
+                if (success) {
+                    Toast.makeText(context, getString(R.string.rental_success, vehicleName), Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack(R.id.navigation_home, false)
+                }
             }
         }
 
-        eventViewModel.error.observe(viewLifecycleOwner) { errorMsg ->
-            errorMsg?.let {
-                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        eventViewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                Toast.makeText(context, getString(errorResId), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -95,7 +99,7 @@ class RentalFormFragment : Fragment() {
         etDuration.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val duration = s.toString().toIntOrNull() ?: 0
+                val duration = s.toString().toLongOrNull() ?: 0
                 val total = duration * vehiclePrice
                 tvTotal.text = getString(R.string.price_format, String.format(Locale.getDefault(), "%,d", total))
             }
@@ -103,10 +107,10 @@ class RentalFormFragment : Fragment() {
         })
 
         btnConfirm.setOnClickListener {
-            val name = etName.text.toString()
-            val startDate = etStartDate.text.toString()
-            val durationStr = etDuration.text.toString()
-            val pickup = etPickup.text.toString()
+            val name = etName.text.toString().trim()
+            val startDate = etStartDate.text.toString().trim()
+            val durationStr = etDuration.text.toString().trim()
+            val pickup = etPickup.text.toString().trim()
 
             if (name.isEmpty() || startDate.isEmpty() || durationStr.isEmpty() || pickup.isEmpty()) {
                 Toast.makeText(context, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show()
@@ -115,18 +119,26 @@ class RentalFormFragment : Fragment() {
 
             val duration = durationStr.toIntOrNull() ?: 0
             val userEmail = userViewModel.getUserEmail() ?: ""
+            val userRole = userViewModel.getUserRole()
             
-            if (userEmail.isNotEmpty() && vehicleId != -1) {
-                // Call ViewModel to save to API and Local DB
+            // Point 3: Guest Security. Prevent rental if user is guest or not logged in properly.
+            if (userEmail.isEmpty() || userEmail == "guest@kendaraiin.com") {
+                Toast.makeText(context, getString(R.string.error_must_login), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (vehicleId != -1) {
                 eventViewModel.rentVehicle(vehicleId, userEmail, startDate, duration, pickup)
-            } else {
-                Toast.makeText(context, "Gagal: Silakan login terlebih dahulu", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun setupDatePicker(editText: EditText) {
-        editText.setOnClickListener {
+        // Point 6: Prevent manual typing
+        editText.isFocusable = false
+        editText.isClickable = true
+        
+        val showDialog = {
             val calendar = Calendar.getInstance()
             val datePickerDialog = DatePickerDialog(
                 requireContext(),
@@ -142,5 +154,7 @@ class RentalFormFragment : Fragment() {
             datePickerDialog.datePicker.minDate = calendar.timeInMillis
             datePickerDialog.show()
         }
+        
+        editText.setOnClickListener { showDialog() }
     }
 }

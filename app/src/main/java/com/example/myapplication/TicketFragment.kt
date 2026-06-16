@@ -1,11 +1,13 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.databinding.FragmentTicketBinding
 
@@ -14,13 +16,12 @@ class TicketFragment : Fragment() {
     private var _binding: FragmentTicketBinding? = null
     private val binding get() = _binding!!
 
-    // Menggunakan ViewModel dengan factory untuk sinkronisasi data
-    private val eventViewModel: EventViewModel by viewModels { ViewModelFactory(requireContext()) }
-    private val userViewModel: UserViewModel by viewModels { ViewModelFactory(requireContext()) }
+    // Menggunakan activityViewModels agar datanya sama dengan HomeActivity
+    private val eventViewModel: EventViewModel by activityViewModels { ViewModelFactory(requireContext()) }
+    private val userViewModel: UserViewModel by activityViewModels { ViewModelFactory(requireContext()) }
     
     private lateinit var adapter: EventAdapter
-    private var isAdmin: Boolean = false
-    private var userEmail: String = ""
+    private var currentStatusFilter: String = "semua"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,39 +35,39 @@ class TicketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Ambil data user dari UserViewModel (Session)
-        val userRole = userViewModel.getUserRole() ?: "Customer"
-        userEmail = userViewModel.getUserEmail() ?: ""
-        isAdmin = userRole == "Admin"
+        val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
 
-        // Update UI berdasarkan Role
         if (isAdmin) {
-            binding.toolbarTicket.title = "Unit Tersewa"
-            binding.tvEmptyTitle.text = "Belum Ada Unit Tersewa"
-            binding.tvEmptyDesc.text = "Daftar unit milik Anda yang sedang disewa pelanggan akan muncul di sini."
-        } else {
-            binding.toolbarTicket.title = "Riwayat Sewa"
-            binding.tvEmptyTitle.text = "Belum Ada Riwayat"
-            binding.tvEmptyDesc.text = "Riwayat sewa kendaraan kamu akan muncul di sini."
+            binding.toolbarTicket.title = getString(R.string.ticket_title_admin)
+            binding.tvEmptyTitle.text = getString(R.string.ticket_empty_title_admin)
+            binding.tvEmptyDesc.text = getString(R.string.ticket_empty_desc_admin)
         }
 
-        setupRecyclerView()
+        setupRecyclerView(isAdmin)
+        setupFilters()
         observeViewModel()
 
-        // Panggil fetch data secara otomatis saat fragment dibuka
         loadData()
-
-        binding.swipeRefresh.setOnRefreshListener {
-            loadData()
-        }
+        binding.swipeRefresh.setOnRefreshListener { loadData() }
     }
 
     private fun loadData() {
-        // Ambil data terbaru dari server XAMPP
+        val userRole = userViewModel.getUserRole()
+        val userEmail = userViewModel.getUserEmail()
+        val isAdmin = userRole?.equals("Admin", ignoreCase = true) == true
         eventViewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
     }
 
-    private fun setupRecyclerView() {
+    private fun setupFilters() {
+        binding.chipAll.setOnClickListener { currentStatusFilter = "semua"; applyFilters() }
+        binding.chipPending.setOnClickListener { currentStatusFilter = "pending"; applyFilters() }
+        binding.chipActive.setOnClickListener { currentStatusFilter = "approved"; applyFilters() }
+        binding.chipFinished.setOnClickListener { currentStatusFilter = "completed"; applyFilters() }
+        binding.chipCanceled.setOnClickListener { currentStatusFilter = "canceled"; applyFilters() }
+    }
+
+    private fun setupRecyclerView(isAdmin: Boolean) {
+        val userEmail = userViewModel.getUserEmail() ?: ""
         adapter = EventAdapter(
             events = emptyList(),
             isAdmin = isAdmin,
@@ -75,47 +76,65 @@ class TicketFragment : Fragment() {
                 val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
                 findNavController().navigate(R.id.navigation_detail, bundle)
             },
-            onDeleteClick = {}
+            onDeleteClick = {},
+            onStatusAction = { event, newStatus ->
+                eventViewModel.updateRentalStatus(event.id, newStatus, if (isAdmin) userEmail else null)
+            }
         )
         binding.rvTicket.adapter = adapter
     }
 
     private fun observeViewModel() {
-        eventViewModel.events.observe(viewLifecycleOwner) { events ->
-            val filteredList = if (isAdmin) {
-                // Admin: Lihat unit MILIKNYA yang SEDANG DISEWA
-                events.filter { 
-                    it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) && it.isRegistered 
-                }
-            } else {
-                // Customer: Lihat unit yang PERNAH/SEDANG DIA SEWA
-                events.filter { 
-                    it.renterEmail?.trim().equals(userEmail.trim(), ignoreCase = true) 
-                }
-            }
-
-            if (filteredList.isEmpty()) {
-                binding.layoutEmpty.visibility = View.VISIBLE
-                binding.rvTicket.visibility = View.GONE
-            } else {
-                binding.layoutEmpty.visibility = View.GONE
-                binding.rvTicket.visibility = View.VISIBLE
-                adapter.updateData(filteredList, isAdmin, true)
-            }
-            binding.swipeRefresh.isRefreshing = false
-        }
-
+        eventViewModel.events.observe(viewLifecycleOwner) { applyFilters() }
+        
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             if (!binding.swipeRefresh.isRefreshing) {
                 binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             }
         }
-        
-        eventViewModel.error.observe(viewLifecycleOwner) { error ->
-            if (error != null) {
+
+        // PERBAIKAN: Menggunakan EventWrapper agar pesan error muncul dengan benar
+        eventViewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                errorResId?.let {
+                    Toast.makeText(context, getString(it), Toast.LENGTH_LONG).show()
+                }
                 binding.swipeRefresh.isRefreshing = false
             }
         }
+    }
+
+    private fun applyFilters() {
+        val allEvents = eventViewModel.events.value ?: emptyList()
+        val userRole = userViewModel.getUserRole() ?: "Customer"
+        val userEmail = userViewModel.getUserEmail() ?: ""
+        val isAdmin = userRole.equals("Admin", ignoreCase = true)
+        
+        val filteredList = allEvents.filter { event ->
+            val status = event.effectiveStatus
+
+            val isMine = if (isAdmin) {
+                // Admin melihat kiriman miliknya yang ada status sewanya
+                val matchAdmin = event.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true)
+                matchAdmin && status.isNotEmpty()
+            } else {
+                // Customer melihat yang disewa oleh dirinya
+                event.renterEmail?.trim().equals(userEmail.trim(), ignoreCase = true)
+            }
+
+            val matchesStatus = if (currentStatusFilter == "semua") true else status == currentStatusFilter
+            isMine && matchesStatus
+        }
+
+        if (filteredList.isEmpty()) {
+            binding.layoutEmpty.visibility = View.VISIBLE
+            binding.rvTicket.visibility = View.GONE
+        } else {
+            binding.layoutEmpty.visibility = View.GONE
+            binding.rvTicket.visibility = View.VISIBLE
+            adapter.updateData(filteredList, isAdmin, true)
+        }
+        binding.swipeRefresh.isRefreshing = false
     }
 
     override fun onDestroyView() {

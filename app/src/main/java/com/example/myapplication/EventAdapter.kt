@@ -1,23 +1,24 @@
 package com.example.myapplication
 
-import android.net.Uri
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import com.bumptech.glide.Glide
 
 class EventAdapter(
     private var events: List<Event>,
     private var isAdmin: Boolean = false,
     private var isHistory: Boolean = false,
     private val onItemClick: (Event) -> Unit,
-    private val onDeleteClick: (Event) -> Unit
+    private val onDeleteClick: (Event) -> Unit,
+    private val onStatusAction: ((Event, String) -> Unit)? = null
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
     class EventViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -29,6 +30,10 @@ class EventAdapter(
         val tvSeats: TextView = view.findViewById(R.id.tvSeats)
         val tvLocation: TextView = view.findViewById(R.id.tvLocationItem)
         val tvRenterLabel: TextView = view.findViewById(R.id.tvRenterLabel)
+        val tvStatusBadge: TextView = view.findViewById(R.id.tvStatusBadge)
+        val layoutActions: LinearLayout = view.findViewById(R.id.layoutActions)
+        val btnCancel: Button = view.findViewById(R.id.btnActionCancel)
+        val btnApprove: Button = view.findViewById(R.id.btnActionApprove)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
@@ -38,109 +43,78 @@ class EventAdapter(
 
     override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
         val event = events[position]
+        val context = holder.itemView.context
         
-        holder.tvName.text = event.name
-        val basePrice = event.price.replace(" / hari", "").replace(" / Hari", "")
-        holder.tvPrice.text = "$basePrice / hari"
+        holder.tvName.text = if (event.name.isNullOrEmpty()) context.getString(R.string.unknown_name) else event.name
         
-        holder.tvTransmission.text = event.transmission ?: "Matic"
-        holder.tvSeats.text = event.seats ?: "5 Kursi"
-        holder.tvLocation.text = event.location ?: "Jakarta"
+        val rawPrice = if (event.price.isNullOrEmpty()) "0" else event.price.replace(Regex("[^0-9]"), "")
+        holder.tvPrice.text = context.getString(R.string.price_per_day_format, rawPrice)
         
-        if (!event.imageUri.isNullOrEmpty()) {
-            try {
-                holder.ivProduct.setPadding(0, 0, 0, 0)
-                holder.ivProduct.setImageURI(Uri.parse(event.imageUri))
-            } catch (e: Exception) {
-                holder.ivProduct.setImageResource(android.R.drawable.ic_menu_gallery)
-                holder.ivProduct.setPadding(30, 30, 30, 30)
-            }
-        } else {
-            holder.ivProduct.setImageResource(android.R.drawable.ic_menu_gallery)
-            holder.ivProduct.setPadding(30, 30, 30, 30)
-        }
+        holder.tvTransmission.text = event.transmission ?: context.getString(R.string.label_manual)
+        holder.tvSeats.text = context.getString(R.string.seats_format, event.seats ?: "2")
+        holder.tvLocation.text = event.location ?: "Bandung"
+        
+        Glide.with(context)
+            .load(event.imageUri)
+            .placeholder(android.R.drawable.ic_menu_gallery)
+            .error(android.R.drawable.ic_menu_gallery)
+            .centerCrop()
+            .into(holder.ivProduct)
 
-        holder.ivDelete.visibility = if (isAdmin && !isHistory) View.VISIBLE else View.GONE
-
-        // Tampilkan Informasi Sewa & Sisa Waktu di Riwayat
         if (isHistory) {
-            holder.tvRenterLabel.visibility = View.VISIBLE
-            val remainingText = getRemainingTimeText(event.rentalStartDate, event.rentalDuration)
+            val status = event.effectiveStatus
+            holder.tvStatusBadge.visibility = View.VISIBLE
             
-            if (isAdmin && !event.renterEmail.isNullOrEmpty()) {
-                val baseText = "Penyewa: ${event.renterEmail}"
-                holder.tvRenterLabel.text = if (remainingText.isNotEmpty()) "$baseText\n$remainingText" else baseText
-            } else if (!event.rentalStartDate.isNullOrEmpty()) {
-                // Untuk Customer
-                val baseText = "Sewa: ${event.rentalStartDate} (${event.rentalDuration} Hari)"
-                holder.tvRenterLabel.text = if (remainingText.isNotEmpty()) "$baseText | $remainingText" else baseText
+            val statusDisplay = when (status) {
+                "pending" -> context.getString(R.string.status_pending)
+                "approved" -> context.getString(R.string.status_approved)
+                "canceled" -> context.getString(R.string.status_canceled)
+                "completed" -> context.getString(R.string.status_completed)
+                else -> status.replaceFirstChar { it.uppercase() }
+            }
+            holder.tvStatusBadge.text = statusDisplay
+            
+            val colorRes = when (status) {
+                "approved" -> R.color.status_approved
+                "canceled" -> R.color.status_canceled
+                "completed" -> R.color.status_completed
+                else -> R.color.status_pending
+            }
+            holder.tvStatusBadge.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(context, colorRes))
+
+            holder.tvRenterLabel.visibility = View.VISIBLE
+            holder.tvRenterLabel.text = if (isAdmin) {
+                context.getString(R.string.label_renter, event.renterEmail ?: "")
             } else {
-                holder.tvRenterLabel.visibility = View.GONE
+                context.getString(R.string.label_rental_date, event.rentalStartDate ?: "")
+            }
+
+            if (status == "pending") {
+                holder.layoutActions.visibility = View.VISIBLE
+                holder.btnApprove.visibility = if (isAdmin) View.VISIBLE else View.GONE
+                holder.btnCancel.visibility = View.VISIBLE
+                holder.btnCancel.text = if (isAdmin) context.getString(R.string.btn_reject) else context.getString(R.string.btn_cancel)
+            } else {
+                holder.layoutActions.visibility = View.GONE
             }
         } else {
-            holder.tvRenterLabel.visibility = View.GONE
+            holder.tvStatusBadge.visibility = View.GONE
+            holder.layoutActions.visibility = View.GONE
+            holder.ivDelete.visibility = if (isAdmin) View.VISIBLE else View.GONE
         }
 
         holder.itemView.setOnClickListener { onItemClick(event) }
+        holder.btnApprove.setOnClickListener { onStatusAction?.invoke(event, "approved") }
+        holder.btnCancel.setOnClickListener { onStatusAction?.invoke(event, "canceled") }
         holder.ivDelete.setOnClickListener { onDeleteClick(event) }
-    }
-
-    private fun getRemainingTimeText(startDateStr: String?, duration: Int?): String {
-        if (startDateStr.isNullOrEmpty() || duration == null) return ""
-        
-        return try {
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val startDate = sdf.parse(startDateStr) ?: return ""
-            
-            val calendar = Calendar.getInstance()
-            calendar.time = startDate
-            calendar.add(Calendar.DAY_OF_YEAR, duration)
-            
-            val endDate = calendar.time
-            val currentTime = Calendar.getInstance().time
-            
-            val diffInMillis = endDate.time - currentTime.time
-            val diffInDays = diffInMillis / (24 * 60 * 60 * 1000)
-            
-            when {
-                diffInMillis <= 0 -> "Selesai"
-                diffInDays >= 1 -> "Sisa: $diffInDays Hari"
-                else -> {
-                    val diffInHours = diffInMillis / (60 * 60 * 1000)
-                    if (diffInHours >= 1) "Sisa: $diffInHours Jam" else "Sisa: Kurang dari 1 jam"
-                }
-            }
-        } catch (e: Exception) {
-            ""
-        }
     }
 
     override fun getItemCount(): Int = events.size
 
     fun updateData(newEvents: List<Event>, adminStatus: Boolean = false, historyStatus: Boolean = false) {
-        val diffCallback = EventDiffCallback(events, newEvents)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-        
         events = newEvents
         isAdmin = adminStatus
         isHistory = historyStatus
-        
-        diffResult.dispatchUpdatesTo(this)
-    }
-
-    class EventDiffCallback(
-        private val oldList: List<Event>,
-        private val newList: List<Event>
-    ) : DiffUtil.Callback() {
-        override fun getOldListSize(): Int = oldList.size
-        override fun getNewListSize(): Int = newList.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition].id == newList[newItemPosition].id
-        }
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition] == newList[newItemPosition]
-        }
+        notifyDataSetChanged()
     }
 }

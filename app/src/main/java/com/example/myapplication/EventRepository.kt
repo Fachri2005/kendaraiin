@@ -3,38 +3,26 @@ package com.example.myapplication
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import retrofit2.Response
 
 class EventRepository(context: Context, val apiService: ApiService = RetrofitClient.apiService) {
-    private val dbHelper = EventDatabaseHelper(context)
+    private val appContext = context.applicationContext
+    private val dbHelper = EventDatabaseHelper(appContext)
 
-    // --- API CALLS ---
-    suspend fun getEventsFromApi(adminEmail: String? = null): Response<ApiResponse<List<Event>>> {
-        return apiService.getEvents(adminEmail)
-    }
+    suspend fun getEventsFromApi(adminEmail: String? = null): Response<ApiResponse<List<Event>>> = apiService.getEvents(adminEmail)
+    suspend fun getEventByIdFromApi(id: Int): Response<ApiResponse<Event>> = apiService.getEventById(id)
+    suspend fun addEventToApi(event: Event): Response<ApiResponse<Map<String, Int>>> = apiService.addEvent(event)
+    suspend fun updateEventToApi(id: Int, event: Event): Response<ApiResponse<Unit>> = apiService.updateEvent(id, event)
+    suspend fun deleteEventFromApi(id: Int, adminEmail: String? = null): Response<ApiResponse<Unit>> = apiService.deleteEvent(id, adminEmail)
 
-    suspend fun getEventByIdFromApi(id: Int): Response<ApiResponse<Event>> {
-        return apiService.getEventById(id)
-    }
-
-    suspend fun addEventToApi(event: Event): Response<ApiResponse<Map<String, Int>>> {
-        return apiService.addEvent(event)
-    }
-
-    suspend fun updateEventToApi(id: Int, event: Event): Response<ApiResponse<Unit>> {
-        return apiService.updateEvent(id, event)
-    }
-
-    suspend fun deleteEventFromApi(id: Int, adminEmail: String? = null): Response<ApiResponse<Unit>> {
-        return apiService.deleteEvent(id, adminEmail)
-    }
-
-    // --- SYNC LOGIC: XAMPP -> SQLite ---
     fun saveEventsToLocal(events: List<Event>) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
-            db.delete(EventDatabaseHelper.TABLE_NAME, null, null)
+            // Perbaikan Bug: Jangan hapus SEMUA data jika yang diunduh hanya parsial (misal filter admin)
+            // Strategi: Gunakan REPLACE untuk update/insert, dan hanya hapus jika benar-benar perlu.
+            
             for (event in events) {
                 val values = ContentValues().apply {
                     put(EventDatabaseHelper.COLUMN_ID, event.id)
@@ -52,43 +40,44 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
                     put(EventDatabaseHelper.COLUMN_RENTAL_START_DATE, event.rentalStartDate)
                     put(EventDatabaseHelper.COLUMN_RENTAL_DURATION, event.rentalDuration)
                     put(EventDatabaseHelper.COLUMN_PICKUP_LOCATION, event.pickupLocation)
+                    put(EventDatabaseHelper.COLUMN_RENTAL_STATUS, event.rentalStatus)
                 }
-                db.insert(EventDatabaseHelper.TABLE_NAME, null, values)
+                db.insertWithOnConflict(EventDatabaseHelper.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE)
             }
             db.setTransactionSuccessful()
         } finally {
             db.endTransaction()
-            db.close()
         }
     }
 
-    // --- LOCAL DB CALLS ---
+    fun updateRentalStatusLocal(id: Int, status: String): Boolean {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(EventDatabaseHelper.COLUMN_RENTAL_STATUS, status)
+            if (status == "approved") put(EventDatabaseHelper.COLUMN_IS_REGISTERED, 1)
+            else if (status == "canceled" || status == "completed") put(EventDatabaseHelper.COLUMN_IS_REGISTERED, 0)
+        }
+        val result = db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
+        return result > 0
+    }
+
     fun getAllEventsFromLocal(): List<Event> {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} ORDER BY ${EventDatabaseHelper.COLUMN_ID} DESC", null)
         if (cursor.moveToFirst()) {
-            do {
-                eventList.add(cursorToEvent(cursor))
-            } while (cursor.moveToNext())
+            do { eventList.add(cursorToEvent(cursor)) } while (cursor.moveToNext())
         }
         cursor.close()
-        db.close()
         return eventList
     }
 
     fun getEventById(id: Int): Event? {
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_ID} = ?",
-            arrayOf(id.toString())
-        )
+        val cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
         var event: Event? = null
-        if (cursor.moveToFirst()) {
-            event = cursorToEvent(cursor)
-        }
+        if (cursor.moveToFirst()) event = cursorToEvent(cursor)
         cursor.close()
-        db.close()
         return event
     }
 
@@ -100,23 +89,10 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             arrayOf(adminEmail)
         )
         if (cursor.moveToFirst()) {
-            do {
-                eventList.add(cursorToEvent(cursor))
-            } while (cursor.moveToNext())
+            do { eventList.add(cursorToEvent(cursor)) } while (cursor.moveToNext())
         }
         cursor.close()
-        db.close()
         return eventList
-    }
-
-    fun setRegistered(id: Int, isRegistered: Boolean, renterEmail: String) {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(EventDatabaseHelper.COLUMN_IS_REGISTERED, if (isRegistered) 1 else 0)
-            put(EventDatabaseHelper.COLUMN_RENTER_EMAIL, renterEmail)
-        }
-        db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
-        db.close()
     }
 
     fun rentVehicleLocal(id: Int, renterEmail: String, startDate: String, duration: Int, pickup: String): Boolean {
@@ -127,24 +103,20 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             put(EventDatabaseHelper.COLUMN_RENTAL_START_DATE, startDate)
             put(EventDatabaseHelper.COLUMN_RENTAL_DURATION, duration)
             put(EventDatabaseHelper.COLUMN_PICKUP_LOCATION, pickup)
+            put(EventDatabaseHelper.COLUMN_RENTAL_STATUS, "pending")
         }
         val result = db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
-        db.close()
         return result > 0
     }
 
     fun searchVehicles(query: String): List<Event> {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
-        val sql = "SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_NAME} LIKE ?"
-        val cursor: Cursor = db.rawQuery(sql, arrayOf("%$query%"))
+        val cursor: Cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_NAME} LIKE ?", arrayOf("%$query%"))
         if (cursor.moveToFirst()) {
-            do {
-                eventList.add(cursorToEvent(cursor))
-            } while (cursor.moveToNext())
+            do { eventList.add(cursorToEvent(cursor)) } while (cursor.moveToNext())
         }
         cursor.close()
-        db.close()
         return eventList
     }
 
@@ -164,7 +136,8 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             renterEmail = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTER_EMAIL)),
             rentalStartDate = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTAL_START_DATE)),
             rentalDuration = cursor.getInt(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTAL_DURATION)),
-            pickupLocation = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_PICKUP_LOCATION))
+            pickupLocation = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_PICKUP_LOCATION)),
+            rentalStatus = cursor.getString(cursor.getColumnIndexOrThrow(EventDatabaseHelper.COLUMN_RENTAL_STATUS))
         )
     }
 }

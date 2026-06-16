@@ -15,7 +15,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
-            app:title="Riwayat Sewa"
+            app:title="@string/ticket_title"
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -39,122 +39,59 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Search & Filter Section -->
-                    <LinearLayout
+                    <!-- Filter Status Section -->
+                    <HorizontalScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
                         android:paddingHorizontal="16dp"
-                        android:paddingTop="16dp">
+                        android:paddingTop="12dp"
+                        android:scrollbars="none">
 
-                        <!-- Search -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chipGroupStatus"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            app:singleSelection="true">
 
-                            <androidx.cardview.widget.CardView
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                app:cardCornerRadius="12dp"
-                                app:cardElevation="0dp"
-                                app:cardBackgroundColor="#F5F5F5">
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:gravity="center_vertical"
-                                    android:orientation="horizontal"
-                                    android:paddingHorizontal="12dp">
-
-                                    <ImageView
-                                        android:layout_width="20dp"
-                                        android:layout_height="20dp"
-                                        android:src="@android:drawable/ic_menu_search"
-                                        app:tint="#9E9E9E"
-                                        android:contentDescription="@null" />
-
-                                    <EditText
-                                        android:id="@+id/etSearchTransaction"
-                                        android:layout_width="0dp"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:background="@null"
-                                        android:hint="Cari mobil atau transaksi..."
-                                        android:paddingStart="8dp"
-                                        android:textSize="14sp"
-                                        android:inputType="text"
-                                        android:importantForAutofill="no" />
-
-                                </LinearLayout>
-
-                            </androidx.cardview.widget.CardView>
-
-                            <androidx.cardview.widget.CardView
-                                android:id="@+id/btnFilter"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:layout_marginStart="12dp"
-                                app:cardCornerRadius="12dp"
-                                app:cardBackgroundColor="#163A70">
-
-                                <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
-                                    android:layout_gravity="center"
-                                    android:src="@android:drawable/ic_menu_sort_by_size"
-                                    app:tint="@android:color/white"
-                                    android:contentDescription="@null" />
-
-                            </androidx.cardview.widget.CardView>
-
-                        </LinearLayout>
-
-                        <!-- Filter Status -->
-                        <HorizontalScrollView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:scrollbars="none">
-
-                            <com.google.android.material.chip.ChipGroup
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipAll"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                app:singleSelection="true">
+                                android:text="@string/ticket_status_all"
+                                android:checked="true" />
 
-                                <com.google.android.material.chip.Chip
-                                    android:id="@+id/chipAll"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Semua"
-                                    android:checked="true" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipPending"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ticket_status_pending" />
 
-                                <com.google.android.material.chip.Chip
-                                    android:id="@+id/chipActive"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Aktif" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipActive"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ticket_status_success" />
 
-                                <com.google.android.material.chip.Chip
-                                    android:id="@+id/chipFinished"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Selesai" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipFinished"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ticket_status_finished" />
 
-                                <com.google.android.material.chip.Chip
-                                    android:id="@+id/chipCanceled"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Dibatalkan" />
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipCanceled"
+                                style="@style/Widget.MaterialComponents.Chip.Choice"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/ticket_status_canceled" />
 
-                            </com.google.android.material.chip.ChipGroup>
+                        </com.google.android.material.chip.ChipGroup>
 
-                        </HorizontalScrollView>
-
-                    </LinearLayout>
+                    </HorizontalScrollView>
 
                     <!-- Empty State -->
                     <LinearLayout
@@ -179,7 +116,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="24dp"
-                            android:text="Belum Ada Riwayat"
+                            android:text="@string/ticket_empty_title"
                             android:textColor="@color/black"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -189,7 +126,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="Riwayat sewa kendaraan akan muncul di sini."
+                            android:text="@string/ticket_empty_desc"
                             android:textAlignment="center"
                             android:textColor="@color/gray_text"
                             android:textSize="14sp" />
@@ -200,7 +137,7 @@
                         android:id="@+id/rvTicket"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="8dp"
                         android:nestedScrollingEnabled="false"
                         android:paddingHorizontal="12dp"
                         android:paddingBottom="24dp"
