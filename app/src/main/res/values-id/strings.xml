@@ -48,12 +48,14 @@
     <string name="error_invalid_email">Format email tidak valid!</string>
     <string name="error_password_short">Password minimal 6 karakter!</string>
     <string name="error_password_mismatch">Password tidak cocok!</string>
-    <string name="error_login_failed">Login Gagal! Cek Email/Password atau Koneksi Server.</string>
+    <string name="error_login_failed">Login Gagal! Email atau Password salah.</string>
     <string name="error_register_failed">Registrasi Gagal! Email mungkin sudah terdaftar.</string>
     <string name="error_data_not_found">Data tidak ditemukan.</string>
     <string name="error_must_login">Silakan login terlebih dahulu</string>
     <string name="error_no_whatsapp">WhatsApp tidak terpasang</string>
     <string name="error_image_permission">Gagal mengambil izin gambar</string>
+    <string name="error_network">Kesalahan jaringan. Mohon periksa koneksi Anda.</string>
+    <string name="error_server_unavailable">Server tidak tersedia. Mohon coba lagi nanti.</string>
 
     <!-- Rental Form -->
     <string name="rental_form_title">Formulir Penyewaan</string>

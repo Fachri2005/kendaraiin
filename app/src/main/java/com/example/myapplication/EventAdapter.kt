@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.res.ColorStateList
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,16 +47,24 @@ class EventAdapter(
         val context = holder.itemView.context
         
         holder.tvName.text = if (event.name.isNullOrEmpty()) context.getString(R.string.unknown_name) else event.name
-        
-        val rawPrice = if (event.price.isNullOrEmpty()) "0" else event.price.replace(Regex("[^0-9]"), "")
-        holder.tvPrice.text = context.getString(R.string.price_per_day_format, rawPrice)
-        
+        holder.tvPrice.text = context.getString(R.string.price_per_day_format, event.formattedPrice)
         holder.tvTransmission.text = event.transmission ?: context.getString(R.string.label_manual)
         holder.tvSeats.text = context.getString(R.string.seats_format, event.seats ?: "2")
         holder.tvLocation.text = event.location ?: "Bandung"
         
+        // Fix: Use Uri.parse safely and handle potential permission issues
+        val imageSource: Any? = if (!event.imageUri.isNullOrEmpty()) {
+            if (event.imageUri.startsWith("content://")) {
+                Uri.parse(event.imageUri)
+            } else {
+                event.imageUri
+            }
+        } else {
+            android.R.drawable.ic_menu_gallery
+        }
+
         Glide.with(context)
-            .load(event.imageUri)
+            .load(imageSource)
             .placeholder(android.R.drawable.ic_menu_gallery)
             .error(android.R.drawable.ic_menu_gallery)
             .centerCrop()

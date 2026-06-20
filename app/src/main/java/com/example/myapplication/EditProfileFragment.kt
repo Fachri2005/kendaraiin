@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.example.myapplication.databinding.FragmentEditProfileBinding
 
 class EditProfileFragment : Fragment() {
@@ -30,7 +31,11 @@ class EditProfileFragment : Fragment() {
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     requireContext().contentResolver.takePersistableUriPermission(it, takeFlags)
                     selectedImageUri = it
-                    binding.ivEditProfile.setImageURI(it)
+                    
+                    Glide.with(this)
+                        .load(it)
+                        .centerCrop()
+                        .into(binding.ivEditProfile)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Toast.makeText(context, getString(R.string.error_image_permission), Toast.LENGTH_SHORT).show()
@@ -88,20 +93,18 @@ class EditProfileFragment : Fragment() {
                 binding.etEditName.setText(it.name)
                 binding.etEditEmail.setText(it.email)
                 binding.etEditPhone.setText(it.phone)
-                if (it.imageUri.isNotEmpty()) {
-                    try {
-                        val uri = Uri.parse(it.imageUri)
-                        requireContext().contentResolver.openInputStream(uri)?.use {
-                            binding.ivEditProfile.setImageURI(uri)
-                        }
-                    } catch (e: Exception) {
-                        binding.ivEditProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
-                    }
+                
+                if (!it.imageUri.isNullOrEmpty()) {
+                    Glide.with(this)
+                        .load(Uri.parse(it.imageUri))
+                        .placeholder(android.R.drawable.ic_menu_myplaces)
+                        .error(android.R.drawable.ic_menu_myplaces)
+                        .centerCrop()
+                        .into(binding.ivEditProfile)
                 }
             }
         }
 
-        // Poin 2: Menggunakan EventWrapper untuk event satu kali
         userViewModel.isSuccess.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { success ->
                 if (success) {

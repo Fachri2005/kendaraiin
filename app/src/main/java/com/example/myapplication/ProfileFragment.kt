@@ -3,7 +3,6 @@ package com.example.myapplication
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import com.example.myapplication.databinding.FragmentProfileBinding
 
 class ProfileFragment : Fragment() {
@@ -73,16 +73,16 @@ class ProfileFragment : Fragment() {
             if (user != null) {
                 binding.tvProfileName.text = user.name
                 binding.tvProfileEmail.text = user.email
-                if (user.imageUri.isNotEmpty()) {
-                    try {
-                        val uri = Uri.parse(user.imageUri)
-                        requireContext().contentResolver.openInputStream(uri)?.use {
-                            binding.ivProfile.setImageURI(uri)
-                        }
-                        binding.ivProfile.colorFilter = null
-                    } catch (e: Exception) {
-                        binding.ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
-                    }
+                
+                if (!user.imageUri.isNullOrEmpty()) {
+                    Glide.with(this)
+                        .load(Uri.parse(user.imageUri))
+                        .placeholder(android.R.drawable.ic_menu_myplaces)
+                        .error(android.R.drawable.ic_menu_myplaces)
+                        .into(binding.ivProfile)
+                    binding.ivProfile.colorFilter = null
+                } else {
+                    binding.ivProfile.setImageResource(android.R.drawable.ic_menu_myplaces)
                 }
             }
         }

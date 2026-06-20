@@ -28,6 +28,13 @@ class ChangePasswordFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Proteksi: Jika email tidak ada, jangan biarkan user di sini
+        if (userViewModel.getUserEmail() == null) {
+            Toast.makeText(requireContext(), getString(R.string.error_must_login), Toast.LENGTH_SHORT).show()
+            findNavController().navigateUp()
+            return
+        }
+
         binding.toolbarChangePassword.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
@@ -57,14 +64,11 @@ class ChangePasswordFragment : Fragment() {
             val email = userViewModel.getUserEmail()
             if (email != null) {
                 userViewModel.changePassword(email, currentPass, newPass)
-            } else {
-                Toast.makeText(requireContext(), getString(R.string.error_must_login), Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun setupObservers() {
-        // Poin 2: Menggunakan EventWrapper untuk event satu kali
         userViewModel.isSuccess.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { success ->
                 if (success) {

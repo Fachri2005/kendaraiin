@@ -1,10 +1,13 @@
 package com.example.myapplication
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
@@ -32,8 +35,15 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 } else {
                     _error.postValue(EventWrapper(R.string.error_login_failed))
                 }
+            } catch (e: IOException) {
+                Log.e("UserViewModel", "Network error during login", e)
+                _error.postValue(EventWrapper(R.string.error_network))
+            } catch (e: HttpException) {
+                Log.e("UserViewModel", "HTTP error during login", e)
+                _error.postValue(EventWrapper(R.string.error_server_unavailable))
             } catch (e: Exception) {
-                _error.postValue(EventWrapper(R.string.error_data_not_found))
+                Log.e("UserViewModel", "Unexpected error during login", e)
+                _error.postValue(EventWrapper(R.string.error_login_failed))
             } finally {
                 _isLoading.postValue(false)
             }
@@ -46,15 +56,18 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             try {
                 val success = repository.registerUser(user)
                 if (success) {
-                    // Simpan sesi otomatis setelah registrasi berhasil
                     repository.saveLoginSession(user)
                     _isSuccess.postValue(EventWrapper(true))
                     _error.postValue(EventWrapper(null))
                 } else {
                     _error.postValue(EventWrapper(R.string.error_register_failed))
                 }
+            } catch (e: IOException) {
+                Log.e("UserViewModel", "Network error during register", e)
+                _error.postValue(EventWrapper(R.string.error_network))
             } catch (e: Exception) {
-                _error.postValue(EventWrapper(R.string.error_data_not_found))
+                Log.e("UserViewModel", "Unexpected error during register", e)
+                _error.postValue(EventWrapper(R.string.error_register_failed))
             } finally {
                 _isLoading.postValue(false)
             }
@@ -68,6 +81,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 val result = repository.getUserByEmail(email)
                 _user.postValue(result)
             } catch (e: Exception) {
+                Log.e("UserViewModel", "Error fetching user", e)
                 _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
@@ -91,7 +105,11 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 } else {
                     _error.postValue(EventWrapper(R.string.error_data_not_found))
                 }
+            } catch (e: IOException) {
+                Log.e("UserViewModel", "Network error during updateUser", e)
+                _error.postValue(EventWrapper(R.string.error_network))
             } catch (e: Exception) {
+                Log.e("UserViewModel", "Unexpected error during updateUser", e)
                 _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
@@ -110,7 +128,11 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 } else {
                     _error.postValue(EventWrapper(R.string.error_current_password_wrong))
                 }
+            } catch (e: IOException) {
+                Log.e("UserViewModel", "Network error during changePassword", e)
+                _error.postValue(EventWrapper(R.string.error_network))
             } catch (e: Exception) {
+                Log.e("UserViewModel", "Unexpected error during changePassword", e)
                 _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)
@@ -129,7 +151,11 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 } else {
                     _error.postValue(EventWrapper(R.string.error_data_not_found))
                 }
+            } catch (e: IOException) {
+                Log.e("UserViewModel", "Network error during deleteAccount", e)
+                _error.postValue(EventWrapper(R.string.error_network))
             } catch (e: Exception) {
+                Log.e("UserViewModel", "Unexpected error during deleteAccount", e)
                 _error.postValue(EventWrapper(R.string.error_data_not_found))
             } finally {
                 _isLoading.postValue(false)

@@ -326,14 +326,17 @@ class HomeFragment : Fragment() {
         builder.setView(layout)
         builder.setPositiveButton(getString(R.string.btn_apply)) { _, _ ->
             val name = etName.text.toString().trim()
-            val price = etPrice.text.toString().trim()
+            val inputPrice = etPrice.text.toString().trim()
             val type = actvType.text.toString().trim()
 
-            if (name.isNotEmpty() && price.isNotEmpty() && type.isNotEmpty()) {
+            // Perbaikan Sinkronisasi Harga: Bersihkan input harga dari karakter non-angka
+            val cleanPrice = inputPrice.replace(Regex("[^0-9]"), "")
+
+            if (name.isNotEmpty() && cleanPrice.isNotEmpty() && type.isNotEmpty()) {
                 val vehicle = Event(
                     id = event?.id ?: 0,
                     name = name,
-                    price = price,
+                    price = cleanPrice,
                     description = etDesc.text.toString().trim(),
                     isRegistered = event?.isRegistered ?: false,
                     adminEmail = userEmail,

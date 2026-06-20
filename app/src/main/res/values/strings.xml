@@ -50,12 +50,14 @@
     <string name="error_invalid_email">Invalid email format!</string>
     <string name="error_password_short">Password must be at least 6 characters!</string>
     <string name="error_password_mismatch">Passwords do not match!</string>
-    <string name="error_login_failed">Login Failed! Check Email/Password or Server Connection.</string>
+    <string name="error_login_failed">Login Failed! Invalid email or password.</string>
     <string name="error_register_failed">Registration Failed! Email might already be registered.</string>
     <string name="error_data_not_found">Data not found.</string>
     <string name="error_must_login">Please login first</string>
     <string name="error_no_whatsapp">WhatsApp not installed</string>
     <string name="error_image_permission">Failed to get image permission</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server_unavailable">Server unavailable. Please try again later.</string>
 
     <!-- Rental Form -->
     <string name="rental_form_title">Rental Form</string>

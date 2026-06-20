@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.launch
 
 class VehicleDetailFragment : Fragment() {
@@ -54,7 +55,6 @@ class VehicleDetailFragment : Fragment() {
     private fun setupObservers() {
         eventViewModel.error.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { errorResId ->
-                // Fix: removed unnecessary safe call on errorResId (Int)
                 Toast.makeText(context, getString(errorResId), Toast.LENGTH_SHORT).show()
             }
         }
@@ -101,8 +101,8 @@ class VehicleDetailFragment : Fragment() {
 
         tvName?.text = vehicle.name ?: getString(R.string.unknown_name)
         
-        val rawPrice = vehicle.price?.replace(Regex("[^0-9]"), "") ?: "0"
-        tvPrice?.text = getString(R.string.price_per_day_format, rawPrice)
+        // Fix Bug Harga: Gunakan formattedPrice dari model Event agar seragam
+        tvPrice?.text = getString(R.string.price_per_day_format, vehicle.formattedPrice)
         
         view.findViewById<TextView>(R.id.tvVehicleDesc)?.text = vehicle.description
         view.findViewById<TextView>(R.id.tvDetailType)?.text = vehicle.vehicleType
@@ -110,14 +110,17 @@ class VehicleDetailFragment : Fragment() {
         view.findViewById<TextView>(R.id.tvDetailSeats)?.text = getString(R.string.seats_format, vehicle.seats ?: "2")
         view.findViewById<TextView>(R.id.tvDetailLocation)?.text = vehicle.location
 
-        if (!vehicle.imageUri.isNullOrEmpty()) {
-            try {
-                val uri = Uri.parse(vehicle.imageUri)
-                context.contentResolver.openInputStream(uri)?.use {
-                    ivDetail?.setImageURI(uri)
-                }
-            } catch (e: Exception) {
-                ivDetail?.setImageResource(android.R.drawable.ic_menu_gallery)
+        // Fix Bug Gambar: Gunakan Glide untuk memuat gambar agar terhindar dari SecurityException
+        if (ivDetail != null) {
+            if (!vehicle.imageUri.isNullOrEmpty()) {
+                Glide.with(this)
+                    .load(Uri.parse(vehicle.imageUri))
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_gallery)
+                    .centerCrop()
+                    .into(ivDetail)
+            } else {
+                ivDetail.setImageResource(android.R.drawable.ic_menu_gallery)
             }
         }
 
