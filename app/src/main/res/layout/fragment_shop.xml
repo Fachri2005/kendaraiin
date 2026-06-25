@@ -14,7 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- Green Header -->
+            <!-- Header -->
             <View
                 android:id="@+id/shopHeaderBg"
                 android:layout_width="match_parent"
@@ -22,29 +22,36 @@
                 android:background="@drawable/bg_home_header"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Back Button -->
             <ImageView
                 android:id="@+id/btnBackShop"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="24dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="16dp"
                 android:layout_marginTop="20dp"
-                android:src="@android:drawable/ic_menu_revert"
+                android:padding="4dp"
+                android:src="@drawable/ic_chevron_right"
+                android:rotation="180"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:tint="@color/white" />
+                app:tint="@color/white"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/btn_back_desc" />
 
             <TextView
                 android:id="@+id/tvShopProfileName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="Nama Toko"
+                android:layout_marginTop="48dp"
+                android:text="@string/unknown_name"
                 android:textColor="@color/white"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnBackShop" />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tvShopProfileEmail"
@@ -82,8 +89,8 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Produk" android:textSize="12sp" android:textColor="@color/gray_text"/>
-                        <TextView android:id="@+id/tvShopProductCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="12" android:textStyle="bold" android:textColor="@color/black" android:textSize="16sp"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_products" android:textSize="12sp" android:textColor="@color/gray_text"/>
+                        <TextView android:id="@+id/tvShopProductCount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textStyle="bold" android:textColor="@color/black" android:textSize="16sp"/>
                     </LinearLayout>
                     <View android:layout_width="1dp" android:layout_height="match_parent" android:background="#EEEEEE" />
                     <LinearLayout
@@ -92,7 +99,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:orientation="vertical">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rating" android:textSize="12sp" android:textColor="@color/gray_text"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/label_rating" android:textSize="12sp" android:textColor="@color/gray_text"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4.8" android:textStyle="bold" android:textColor="@color/black" android:textSize="16sp"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -104,7 +111,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="32dp"
-                android:text="Koleksi Kendaraan"
+                android:text="@string/shop_collection"
                 android:textColor="@color/black"
                 android:textSize="18sp"
                 android:textStyle="bold"

@@ -1,99 +1,119 @@
 package com.example.myapplication
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.databinding.FragmentTicketBinding
 
 class TicketFragment : Fragment() {
 
-    private lateinit var repository: EventRepository
-    private lateinit var adapter: EventAdapter
-    private lateinit var rvTicket: RecyclerView
-    private lateinit var layoutEmpty: LinearLayout
-    private lateinit var tvEmptyTitle: TextView
-    private lateinit var tvEmptyDesc: TextView
-    private lateinit var ivEmptyIcon: ImageView
-    
-    private var isAdmin: Boolean = false
-    private var userEmail: String = ""
+    private var _binding: FragmentTicketBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_ticket, container, false)
+    private val eventViewModel: EventViewModel by activityViewModels { ViewModelFactory(requireContext()) }
+    private val userViewModel: UserViewModel by activityViewModels { ViewModelFactory(requireContext()) }
+    
+    private lateinit var adapter: EventAdapter
+    private var currentStatusFilter: String = "semua"
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentTicketBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
 
-        repository = EventRepository(requireContext())
-        rvTicket = view.findViewById(R.id.rvTicket)
-        layoutEmpty = view.findViewById(R.id.layoutEmpty)
-        tvEmptyTitle = view.findViewById(R.id.tvEmptyTitle)
-        tvEmptyDesc = view.findViewById(R.id.tvEmptyDesc)
-        ivEmptyIcon = view.findViewById(R.id.ivEmptyIcon)
-
-        val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userRole = sharedPref.getString("user_role", "Admin") // Defaulting to check logic
-        val userName = sharedPref.getString("user_name", "Pengguna")
-        userEmail = sharedPref.getString("user_email", "") ?: ""
-        isAdmin = userRole == "Admin"
-
-        val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbarTicket)
         if (isAdmin) {
-            toolbar.title = "Unit Tersewa"
-            tvEmptyTitle.text = "Belum Ada Unit Tersewa"
-            tvEmptyDesc.text = "Daftar unit milik Anda yang sedang disewa oleh pelanggan akan muncul di sini."
-        } else {
-            toolbar.title = "Riwayat Sewa"
-            tvEmptyTitle.text = "Belum Ada Riwayat"
-            tvEmptyDesc.text = "Riwayat sewa kendaraan kamu akan muncul di sini setelah kamu melakukan transaksi."
+            binding.toolbarTicket.title = getString(R.string.ticket_title_admin)
+            binding.tvEmptyTitle.text = getString(R.string.ticket_empty_title_admin)
+            binding.tvEmptyDesc.text = getString(R.string.ticket_empty_desc_admin)
         }
 
-        setupRecyclerView()
-        loadHistory()
+        setupRecyclerView(isAdmin)
+        setupFilters()
+        observeViewModel()
+        loadData()
+        binding.swipeRefresh.setOnRefreshListener { loadData() }
     }
 
-    private fun setupRecyclerView() {
+    private fun setupRecyclerView(isAdmin: Boolean) {
+        val userEmail = userViewModel.getUserEmail() ?: ""
         adapter = EventAdapter(
-            events = emptyList(),
             isAdmin = isAdmin,
             isHistory = true,
             onItemClick = { event ->
-                val bundle = Bundle()
-                bundle.putInt("vehicle_id", event.id)
+                val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
                 findNavController().navigate(R.id.navigation_detail, bundle)
             },
-            onDeleteClick = {}
+            onDeleteClick = {},
+            onStatusAction = { event, newStatus ->
+                eventViewModel.updateRentalStatus(event.id, newStatus, if (isAdmin) userEmail else null)
+            }
         )
-        rvTicket.adapter = adapter
+        binding.rvTicket.adapter = adapter
     }
 
-    private fun loadHistory() {
-        val historyList = if (isAdmin) {
-            repository.getRentedUnitsByAdmin(userEmail)
-        } else {
-            repository.getEventsByRenter(userEmail)
+    private fun observeViewModel() {
+        eventViewModel.events.observe(viewLifecycleOwner) { applyFilters() }
+        eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (!binding.swipeRefresh.isRefreshing) binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
-
-        if (historyList.isEmpty()) {
-            layoutEmpty.visibility = View.VISIBLE
-            rvTicket.visibility = View.GONE
-        } else {
-            layoutEmpty.visibility = View.GONE
-            rvTicket.visibility = View.VISIBLE
-            // Update data: isAdmin tells the adapter if it should show renter labels (for history)
-            adapter.updateData(historyList, isAdmin, true)
+        eventViewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                errorResId?.let { if (isAdded) Toast.makeText(context, getString(it), Toast.LENGTH_SHORT).show() }
+                binding.swipeRefresh.isRefreshing = false
+            }
         }
     }
+
+    private fun applyFilters() {
+        if (_binding == null) return
+        val allEvents = eventViewModel.events.value ?: emptyList()
+        val userEmail = userViewModel.getUserEmail() ?: ""
+        val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
+        
+        val filteredList = allEvents.filter { event ->
+            val status = event.effectiveStatus
+            val isMine = if (isAdmin) {
+                event.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) && status.isNotEmpty()
+            } else {
+                event.renterEmail?.trim().equals(userEmail.trim(), ignoreCase = true)
+            }
+            val matchesStatus = if (currentStatusFilter == "semua") true else status == currentStatusFilter
+            isMine && matchesStatus
+        }
+
+        if (filteredList.isEmpty()) {
+            binding.layoutEmpty.visibility = View.VISIBLE
+            binding.rvTicket.visibility = View.GONE
+        } else {
+            binding.layoutEmpty.visibility = View.GONE
+            binding.rvTicket.visibility = View.VISIBLE
+            adapter.updateData(filteredList, isAdmin, true)
+        }
+        binding.swipeRefresh.isRefreshing = false
+    }
+
+    private fun loadData() {
+        val userEmail = userViewModel.getUserEmail()
+        val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
+        eventViewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
+    }
+
+    private fun setupFilters() {
+        binding.chipAll.setOnClickListener { currentStatusFilter = "semua"; applyFilters() }
+        binding.chipPending.setOnClickListener { currentStatusFilter = "pending"; applyFilters() }
+        binding.chipActive.setOnClickListener { currentStatusFilter = "approved"; applyFilters() }
+        binding.chipFinished.setOnClickListener { currentStatusFilter = "completed"; applyFilters() }
+        binding.chipCanceled.setOnClickListener { currentStatusFilter = "canceled"; applyFilters() }
+    }
+
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }

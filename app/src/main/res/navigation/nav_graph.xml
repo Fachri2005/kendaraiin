@@ -27,7 +27,17 @@
         android:id="@+id/navigation_profile"
         android:name="com.example.myapplication.ProfileFragment"
         android:label="Profil"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        <action
+            android:id="@+id/action_navigation_profile_to_navigation_settings"
+            app:destination="@id/navigation_settings" />
+        <action
+            android:id="@+id/action_navigation_profile_to_navigation_help_center"
+            app:destination="@id/navigation_help_center" />
+        <action
+            android:id="@+id/action_navigation_profile_to_navigation_edit_profile"
+            app:destination="@id/navigation_edit_profile" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_detail"
@@ -50,4 +60,42 @@
         android:name="com.example.myapplication.EditProfileFragment"
         android:label="Edit Profil"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/navigation_rental_form"
+        android:name="com.example.myapplication.RentalFormFragment"
+        android:label="Formulir Sewa"
+        tools:layout="@layout/fragment_rental_form">
+        <argument
+            android:name="vehicle_id"
+            app:argType="integer" />
+        <argument
+            android:name="vehicle_name"
+            app:argType="string" />
+        <argument
+            android:name="vehicle_price"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.example.myapplication.SettingsFragment"
+        android:label="Pengaturan"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_navigation_settings_to_navigation_change_password"
+            app:destination="@id/navigation_change_password" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_change_password"
+        android:name="com.example.myapplication.ChangePasswordFragment"
+        android:label="@string/change_password_title"
+        tools:layout="@layout/fragment_change_password" />
+
+    <fragment
+        android:id="@+id/navigation_help_center"
+        android:name="com.example.myapplication.HelpCenterFragment"
+        android:label="Pusat Bantuan"
+        tools:layout="@layout/fragment_help_center" />
 </navigation>

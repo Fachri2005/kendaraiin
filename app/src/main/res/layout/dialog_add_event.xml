@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Foto Kendaraan"
+            android:text="@string/label_vehicle_photo"
             android:textColor="@color/black"
             android:textSize="16sp"
             android:textStyle="bold" />
@@ -38,9 +38,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Pilih Foto dari Galeri"
+            android:text="@string/btn_pick_photo"
             android:textAllCaps="false"
-            android:textColor="@color/green_primary"
+            android:textColor="#294669"
             style="@style/Widget.MaterialComponents.Button.TextButton" />
 
         <View
@@ -54,11 +54,13 @@
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Nama Kendaraan (Contoh: Toyota Avanza 2022)"
+            android:hint="@string/hint_vehicle_name"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="#294669"
+            app:hintTextColor="#294669">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
@@ -72,11 +74,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Harga Sewa (Contoh: Rp 450.000)"
+            android:hint="@string/hint_vehicle_price"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="#294669"
+            app:hintTextColor="#294669">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPrice"
                 android:layout_width="match_parent"
@@ -97,11 +101,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:hint="Tipe"
+                android:hint="@string/label_type"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <AutoCompleteTextView
                     android:id="@+id/actvVehicleType"
                     android:layout_width="match_parent"
@@ -115,11 +121,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="Transmisi"
+                android:hint="@string/label_transmission"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <AutoCompleteTextView
                     android:id="@+id/actvTransmission"
                     android:layout_width="match_parent"
@@ -141,11 +149,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:hint="Kapasitas (7 Kursi)"
+                android:hint="@string/label_capacity"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSeats"
                     android:layout_width="match_parent"
@@ -159,11 +169,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:hint="Lokasi"
+                android:hint="@string/label_location"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusTopStart="12dp">
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="#294669"
+                app:hintTextColor="#294669">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etLocation"
                     android:layout_width="match_parent"
@@ -177,11 +189,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="Deskripsi Unit"
+            android:hint="@string/label_description"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp">
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="#294669"
+            app:hintTextColor="#294669">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etDesc"
                 android:layout_width="match_parent"

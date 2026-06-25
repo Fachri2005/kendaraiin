@@ -21,9 +21,9 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_myplaces"
-            app:tint="@color/green_primary"
+            app:tint="#294669"
             android:background="@drawable/bg_tab_container"
-            android:backgroundTint="#E8F5E9"
+            android:backgroundTint="#E8EEF4"
             android:padding="8dp" />
 
         <LinearLayout
@@ -37,7 +37,7 @@
                 android:id="@+id/tvShopName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nama Toko"
+                android:text="@string/unknown_name"
                 android:textColor="@color/black"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -46,7 +46,7 @@
                 android:id="@+id/tvShopLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Penyewa Terverifikasi"
+                android:text="@string/verified_renter"
                 android:textColor="@color/gray_text"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -56,12 +56,12 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Kunjungi"
+            android:text="@string/visit_shop"
             android:textSize="12sp"
             android:textAllCaps="false"
             android:paddingHorizontal="12dp"
-            app:strokeColor="@color/green_primary"
-            android:textColor="@color/green_primary"
+            app:strokeColor="#294669"
+            android:textColor="#294669"
             app:cornerRadius="20dp" />
 
     </LinearLayout>

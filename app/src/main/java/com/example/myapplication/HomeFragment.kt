@@ -1,40 +1,54 @@
 package com.example.myapplication
 
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.myapplication.databinding.FragmentHomeBinding
+import com.example.myapplication.databinding.DialogFilterBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.NumberFormat
+import java.util.*
 
 class HomeFragment : Fragment() {
 
-    private lateinit var repository: EventRepository
-    private lateinit var adapter: EventAdapter
-    private lateinit var rvHomeVehicles: RecyclerView
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var viewModel: EventViewModel
+    private var eventAdapter: EventAdapter? = null
+    
     private var isAdmin: Boolean = false
     private var userEmail: String = ""
 
     private var selectedImageUri: Uri? = null
     private var currentDialogImageView: ImageView? = null
     private lateinit var pickImageLauncher: ActivityResultLauncher<Array<String>>
+    private var updateJob: Job? = null
+
+    private val idLocale = Locale("id", "ID")
+    private val currencyFormat = NumberFormat.getCurrencyInstance(idLocale).apply { maximumFractionDigits = 0 }
+
+    private var selectedTypes = mutableSetOf<String>()
+    private var selectedTransmissions = mutableSetOf<String>()
+    private var priceSortOrder: String? = null
+    private var minPrice: Float = 0f
+    private var maxPrice: Float = 10000000f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,247 +58,199 @@ class HomeFragment : Fragment() {
                     val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
                     requireContext().contentResolver.takePersistableUriPermission(it, takeFlags)
                     selectedImageUri = it
-                    currentDialogImageView?.setImageURI(it)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                    currentDialogImageView?.let { iv -> 
+                        Glide.with(iv).load(it).override(500).into(iv) 
+                    }
+                } catch (e: Exception) { e.printStackTrace() }
             }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val factory = ViewModelFactory(requireContext())
+        viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
 
-        repository = EventRepository(requireContext())
-        rvHomeVehicles = view.findViewById(R.id.rvHomeVehicles)
-        val tvWelcome = view.findViewById<TextView>(R.id.tvWelcome)
-        val tvHeading = view.findViewById<TextView>(R.id.tvHeading)
-        
-        // Dashboard views
-        val layoutAdmin = view.findViewById<LinearLayout>(R.id.layoutAdminDashboard)
-        val layoutPromo = view.findViewById<LinearLayout>(R.id.layoutPromoAndCategory)
-        val tvTotalUnit = view.findViewById<TextView>(R.id.tvTotalUnit)
-        val tvTotalRented = view.findViewById<TextView>(R.id.tvTotalRented)
-        val btnQuickAdd = view.findViewById<Button>(R.id.btnQuickAdd)
-        val tvListTitle = view.findViewById<TextView>(R.id.tvListTitle)
-        val etSearchHome = view.findViewById<EditText>(R.id.etSearchHome)
-
-        // Get user session
         val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userName = sharedPref.getString("user_name", "Pengguna")
-        val userRole = sharedPref.getString("user_role", "Customer")
         userEmail = sharedPref.getString("user_email", "") ?: ""
-        isAdmin = userRole == "Admin"
+        isAdmin = sharedPref.getString("user_role", "Customer") == "Admin"
 
-        tvWelcome.text = "Halo, $userName!"
-
-        // Toggle UI based on Role
-        if (isAdmin) {
-            layoutAdmin.visibility = View.VISIBLE
-            layoutPromo.visibility = View.GONE
-            tvHeading.text = "Kelola bisnis\nkendaraan Anda"
-            tvListTitle.text = "Manajemen Unit Anda"
-            
-            updateAdminStats(tvTotalUnit, tvTotalRented)
-            
-            btnQuickAdd.setOnClickListener {
-                showAddEditDialog()
-            }
-
-            etSearchHome.hint = "Cari unit Anda..."
-        } else {
-            layoutAdmin.visibility = View.GONE
-            layoutPromo.visibility = View.VISIBLE
-            tvHeading.text = "Sewa kendaraan\nimpianmu hari ini"
-            tvListTitle.text = "Rekomendasi Untukmu"
-            
-            // For Customer, search bar can navigate to Search page
-            etSearchHome.setOnClickListener {
-                findNavController().navigate(R.id.navigation_list)
-            }
-        }
-
-        // Search filtering logic for Home
-        etSearchHome.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val query = s.toString().trim()
-                if (query.isNotEmpty()) {
-                    filterVehicles(query)
-                } else {
-                    loadVehicles()
-                }
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
+        setupUI(sharedPref.getString("user_name", "User"))
         setupRecyclerView()
-        loadVehicles()
+        observeViewModel()
+        refreshData()
     }
 
-    private fun filterVehicles(query: String) {
-        val allResults = repository.searchVehicles(query)
-        val filtered = if (isAdmin) {
-            allResults.filter { it.adminEmail == userEmail }
+    private fun setupUI(userName: String?) {
+        binding.tvWelcome.text = getString(R.string.home_welcome, userName)
+        if (isAdmin) {
+            binding.layoutAdminDashboard.visibility = View.VISIBLE
+            binding.cvFilterHome.visibility = View.GONE
+            binding.tvHeading.text = getString(R.string.home_heading_admin)
+            binding.btnQuickAdd.setOnClickListener { showAddEditDialog() }
         } else {
-            allResults
+            binding.layoutAdminDashboard.visibility = View.GONE
+            binding.cvFilterHome.visibility = View.VISIBLE
+            binding.cvFilterHome.setOnClickListener { showFilterDialog() }
         }
-        adapter.updateData(filtered, isAdmin)
-    }
-
-    private fun updateAdminStats(tvTotalUnit: TextView, tvTotalRented: TextView) {
-        val adminVehicles = repository.getEventsByAdmin(userEmail)
-        tvTotalUnit.text = adminVehicles.size.toString()
-        tvTotalRented.text = adminVehicles.count { it.isRegistered }.toString()
+        binding.tvSeeAll.setOnClickListener { findNavController().navigate(R.id.navigation_list) }
     }
 
     private fun setupRecyclerView() {
-        adapter = EventAdapter(
-            events = emptyList(),
+        eventAdapter = EventAdapter(
             isAdmin = isAdmin, 
             onItemClick = { event -> 
-                if (isAdmin && event.adminEmail == userEmail) {
-                    showAdminOptionsDialog(event)
-                } else {
-                    val bundle = Bundle()
-                    bundle.putInt("vehicle_id", event.id)
-                    findNavController().navigate(R.id.navigation_detail, bundle)
-                }
+                if (isAdmin) showAdminOptionsDialog(event) 
+                else findNavController().navigate(R.id.navigation_detail, Bundle().apply { putInt("vehicle_id", event.id) })
             },
-            onDeleteClick = { event ->
-                if (isAdmin && event.adminEmail == userEmail) {
-                    showDeleteConfirmation(event)
-                }
-            } 
+            onDeleteClick = { event -> if (isAdmin) showDeleteConfirmation(event) }
         )
-        rvHomeVehicles.adapter = adapter
+        binding.rvHomeVehicles.adapter = eventAdapter
     }
 
-    private fun loadVehicles() {
-        val events = if (isAdmin) {
-            repository.getEventsByAdmin(userEmail)
-        } else {
-            repository.getAllEvents()
-        }
-        adapter.updateData(events, isAdmin)
-    }
+    private fun updateVehicleList() {
+        if (_binding == null) return
+        updateJob?.cancel() // HENTIKAN proses lama agar tidak LAG
+        
+        val allEvents = viewModel.events.value ?: emptyList()
+        updateJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+            var filtered = allEvents.filter { 
+                if (isAdmin) it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) 
+                else !it.isRegistered 
+            }
 
-    private fun showAdminOptionsDialog(event: Event) {
-        val options = arrayOf("Lihat Detail (Preview)", "Edit Data Kendaraan", "Hapus Kendaraan")
-        AlertDialog.Builder(requireContext())
-            .setTitle("Opsi Admin: ${event.name}")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> {
-                        val bundle = Bundle()
-                        bundle.putInt("vehicle_id", event.id)
-                        findNavController().navigate(R.id.navigation_detail, bundle)
+            if (!isAdmin) {
+                if (selectedTypes.isNotEmpty()) filtered = filtered.filter { e -> selectedTypes.any { t -> e.vehicleType?.equals(t, ignoreCase = true) == true } }
+                if (selectedTransmissions.isNotEmpty()) filtered = filtered.filter { e -> selectedTransmissions.any { tr -> e.transmission?.equals(tr, ignoreCase = true) == true } }
+                filtered = filtered.filter { it.numericPrice >= minPrice && it.numericPrice <= maxPrice }
+                priceSortOrder?.let { order -> filtered = if (order == "low_to_high") filtered.sortedBy { it.numericPrice } else filtered.sortedByDescending { it.numericPrice } }
+            }
+
+            val rentedCount = if (isAdmin) filtered.count { it.effectiveStatus == "approved" || it.effectiveStatus == "pending" } else 0
+
+            withContext(Dispatchers.Main) {
+                if (_binding != null) {
+                    eventAdapter?.updateData(filtered, isAdmin)
+                    if (isAdmin) {
+                        binding.tvTotalUnit.text = filtered.size.toString()
+                        binding.tvTotalRented.text = rentedCount.toString()
                     }
-                    1 -> showAddEditDialog(event)
-                    2 -> showDeleteConfirmation(event)
                 }
             }
-            .show()
+        }
     }
 
     private fun showAddEditDialog(event: Event? = null) {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle(if (event != null) "Edit Kendaraan" else "Tambah Kendaraan Baru")
-
-        val layout = LayoutInflater.from(context).inflate(R.layout.dialog_add_event, null)
+        val layout = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_event, null)
         val etName = layout.findViewById<EditText>(R.id.etName)
         val etPrice = layout.findViewById<EditText>(R.id.etPrice)
         val etDesc = layout.findViewById<EditText>(R.id.etDesc)
         val etSeats = layout.findViewById<EditText>(R.id.etSeats)
         val etLocation = layout.findViewById<EditText>(R.id.etLocation)
         val ivSelectedImage = layout.findViewById<ImageView>(R.id.ivSelectedImage)
-        val btnPickImage = layout.findViewById<Button>(R.id.btnPickImage)
         val actvType = layout.findViewById<AutoCompleteTextView>(R.id.actvVehicleType)
         val actvTransmission = layout.findViewById<AutoCompleteTextView>(R.id.actvTransmission)
 
-        val types = arrayOf("Motor", "Mobil")
-        actvType.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, types))
-        val transmissions = arrayOf("Matic", "Manual")
-        actvTransmission.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, transmissions))
+        actvType.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, arrayOf("Motor", "Mobil")))
+        actvTransmission.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, arrayOf("Matic", "Manual")))
 
         currentDialogImageView = ivSelectedImage
         selectedImageUri = null 
 
         if (event != null) {
-            etName.setText(event.name)
-            etPrice.setText(event.price)
-            etDesc.setText(event.description)
-            etSeats.setText(event.seats)
-            etLocation.setText(event.location)
-            actvType.setText(event.vehicleType, false)
-            actvTransmission.setText(event.transmission, false)
+            etName.setText(event.name); etPrice.setText(event.price); etDesc.setText(event.description)
+            etSeats.setText(event.seats); etLocation.setText(event.location)
+            actvType.setText(event.vehicleType, false); actvTransmission.setText(event.transmission, false)
             if (!event.imageUri.isNullOrEmpty()) {
-                selectedImageUri = Uri.parse(event.imageUri)
-                ivSelectedImage.setImageURI(selectedImageUri)
+                Glide.with(ivSelectedImage).load(event.imageUri).override(500).into(ivSelectedImage)
             }
         }
 
-        btnPickImage.setOnClickListener {
-            pickImageLauncher.launch(arrayOf("image/*"))
-        }
+        layout.findViewById<Button>(R.id.btnPickImage).setOnClickListener { pickImageLauncher.launch(arrayOf("image/*")) }
 
-        builder.setView(layout)
-        builder.setPositiveButton("Simpan") { _, _ ->
-            val name = etName.text.toString().trim()
-            val price = etPrice.text.toString().trim()
-            val desc = etDesc.text.toString().trim()
-            val seats = etSeats.text.toString().trim()
-            val location = etLocation.text.toString().trim()
-            val type = actvType.text.toString().trim()
-            val transmission = actvTransmission.text.toString().trim()
-            val imageUriString = selectedImageUri?.toString() ?: event?.imageUri ?: ""
-
-            if (name.isNotEmpty() && price.isNotEmpty() && type.isNotEmpty()) {
-                if (event != null) {
-                    repository.updateEvent(event.id, name, price, desc, imageUriString, type, transmission, seats, location)
-                    Toast.makeText(context, "Kendaraan diperbarui!", Toast.LENGTH_SHORT).show()
-                } else {
-                    repository.addEvent(name, price, desc, userEmail, imageUriString, type, transmission, seats, location)
-                    Toast.makeText(context, "Kendaraan ditambahkan!", Toast.LENGTH_SHORT).show()
+        MaterialAlertDialogBuilder(requireActivity()) // Gunakan activity agar lebih stabil
+            .setTitle(if (event != null) getString(R.string.title_edit_vehicle) else getString(R.string.title_add_vehicle))
+            .setView(layout)
+            .setPositiveButton(getString(R.string.btn_apply)) { _, _ ->
+                val name = etName.text.toString().trim()
+                val price = etPrice.text.toString().trim().replace(Regex("[^0-9]"), "")
+                if (name.isNotEmpty() && price.isNotEmpty()) {
+                    val vehicle = Event(
+                        id = event?.id ?: 0, name = name, price = price, 
+                        description = etDesc.text.toString().trim(), seats = etSeats.text.toString().trim(),
+                        location = etLocation.text.toString().trim(), vehicleType = actvType.text.toString(),
+                        transmission = actvTransmission.text.toString(),
+                        adminEmail = userEmail, imageUri = selectedImageUri?.toString() ?: event?.imageUri ?: ""
+                    )
+                    if (event != null) viewModel.updateEvent(event.id, vehicle) {} 
+                    else viewModel.addEvent(vehicle) {}
                 }
-                loadVehicles()
-                // Update stats after adding/editing
-                val tvTotalUnit = view?.findViewById<TextView>(R.id.tvTotalUnit)
-                val tvTotalRented = view?.findViewById<TextView>(R.id.tvTotalRented)
-                if (tvTotalUnit != null && tvTotalRented != null) {
-                    updateAdminStats(tvTotalUnit, tvTotalRented)
-                }
-            } else {
-                Toast.makeText(context, "Nama, Harga, dan Tipe wajib diisi!", Toast.LENGTH_SHORT).show()
             }
-        }
-        builder.setNegativeButton("Batal", null)
-        builder.show()
+            .setNegativeButton(getString(R.string.btn_batal), null)
+            .setOnDismissListener { currentDialogImageView = null }
+            .show()
     }
 
-    private fun showDeleteConfirmation(event: Event) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Hapus Kendaraan")
-            .setMessage("Apakah Anda yakin ingin menghapus ${event.name}?")
-            .setPositiveButton("Hapus") { _, _ ->
-                repository.deleteEvent(event.id)
-                loadVehicles()
-                val tvTotalUnit = view?.findViewById<TextView>(R.id.tvTotalUnit)
-                val tvTotalRented = view?.findViewById<TextView>(R.id.tvTotalRented)
-                if (tvTotalUnit != null && tvTotalRented != null) {
-                    updateAdminStats(tvTotalUnit, tvTotalRented)
+    private fun observeViewModel() {
+        viewModel.events.observe(viewLifecycleOwner) { updateVehicleList() }
+        viewModel.error.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                // FIX BUG BLANK SCREEN: Pastikan errorResId tidak null sebelum panggil getString
+                if (errorResId != null && isAdded) {
+                    Toast.makeText(requireContext(), getString(errorResId), Toast.LENGTH_SHORT).show()
                 }
-                Toast.makeText(context, "Kendaraan dihapus!", Toast.LENGTH_SHORT).show()
             }
-            .setNegativeButton("Batal", null)
-            .show()
+        }
+    }
+
+    private fun showFilterDialog() {
+        val dialogBinding = DialogFilterBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext()).setView(dialogBinding.root).create()
+        dialogBinding.chipMobil.isChecked = selectedTypes.contains("Mobil")
+        dialogBinding.chipMotor.isChecked = selectedTypes.contains("Motor")
+        dialogBinding.priceSlider.setValues(minPrice, maxPrice)
+        updatePriceLabel(dialogBinding.tvPriceRangeValue, minPrice, maxPrice)
+        dialogBinding.priceSlider.addOnChangeListener { slider, _, _ -> updatePriceLabel(dialogBinding.tvPriceRangeValue, slider.values[0], slider.values[1]) }
+        dialogBinding.btnApply.setOnClickListener {
+            selectedTypes.clear(); if (dialogBinding.chipMobil.isChecked) selectedTypes.add("Mobil"); if (dialogBinding.chipMotor.isChecked) selectedTypes.add("Motor")
+            minPrice = dialogBinding.priceSlider.values[0]; maxPrice = dialogBinding.priceSlider.values[1]
+            priceSortOrder = if (dialogBinding.rbPriceLow.isChecked) "low_to_high" else if (dialogBinding.rbPriceHigh.isChecked) "high_to_low" else null
+            updateVehicleList(); dialog.dismiss()
+        }
+        dialogBinding.btnReset.setOnClickListener { 
+            selectedTypes.clear(); selectedTransmissions.clear(); priceSortOrder = null; minPrice = 0f; maxPrice = 10000000f
+            updateVehicleList(); dialog.dismiss() 
+        }
+        dialog.show()
+    }
+
+    private fun updatePriceLabel(textView: TextView, min: Float, max: Float) {
+        textView.text = "${currencyFormat.format(min.toLong())} - ${currencyFormat.format(max.toLong())}"
+    }
+
+    private fun refreshData() = viewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
+    
+    private fun showAdminOptionsDialog(event: Event) {
+        val options = arrayOf(getString(R.string.home_see_all), getString(R.string.title_edit_vehicle), "Hapus", getString(R.string.btn_batal))
+        MaterialAlertDialogBuilder(requireContext()).setItems(options) { _, w ->
+            when (w) {
+                0 -> findNavController().navigate(R.id.navigation_detail, Bundle().apply { putInt("vehicle_id", event.id) })
+                1 -> showAddEditDialog(event)
+                2 -> showDeleteConfirmation(event)
+            }
+        }.show()
+    }
+    private fun showDeleteConfirmation(event: Event) {
+        MaterialAlertDialogBuilder(requireContext()).setMessage("Hapus ${event.name}?").setPositiveButton("Hapus") { _, _ -> viewModel.deleteEvent(event.id, userEmail) { refreshData() } }.show()
+    }
+    override fun onDestroyView() { 
+        updateJob?.cancel()
+        super.onDestroyView()
+        _binding = null 
     }
 }

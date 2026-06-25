@@ -1,0 +1,234 @@
+<resources>
+    <string name="app_name">Kendaraiin</string>
+    <string name="tab_masuk">Login</string>
+    <string name="tab_register">Register</string>
+    <string name="title_login">Let\'s continue your journey!</string>
+    <string name="subtitle_login">Just login, and we\'ll be on our way together again!</string>
+    <string name="label_email">Email*</string>
+    <string name="hint_email">Enter Email…</string>
+    <string name="label_password">Password*</string>
+    <string name="hint_password">Enter password…</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="btn_masuk">Login Now</string>
+    <string name="text_or">Or</string>
+    <string name="btn_google">Login with Google</string>
+    <string name="btn_guest">Guest Mode</string>
+
+    <!-- Register Strings -->
+    <string name="title_register">Register first to make it easier to rent a vehicle</string>
+    <string name="subtitle_register">Create your account and enjoy the convenience of renting a vehicle anytime, anywhere.</string>
+    <string name="info_security_title">Personal Data Security</string>
+    <string name="info_security_desc">Your data is fully protected based on Law No. 27 of 2022 concerning Personal Data Protection (PDP).\n\nComplete the data below to continue the rental process.</string>
+    <string name="label_nama_lengkap">Full Name*</string>
+    <string name="hint_nama_lengkap">Enter full name…</string>
+    <string name="btn_verifikasi">Verify</string>
+    <string name="label_no_telp">Phone Number*</string>
+    <string name="hint_no_telp">Enter phone number…</string>
+    <string name="label_no_telp_darurat">Emergency Phone Number*</string>
+    <string name="hint_no_telp_darurat">Enter emergency phone number…</string>
+    <string name="label_jenis_kelamin">Gender</string>
+    <string name="hint_jenis_kelamin">Select Gender…</string>
+    <string name="label_tanggal_lahir">Date of Birth*</string>
+    <string name="hint_tanggal_lahir">Select Date of Birth…</string>
+    <string name="label_konfirmasi_password">Confirm Password*</string>
+    <string name="btn_lanjut">Continue</string>
+    <string name="btn_daftar_google">Register with Google</string>
+    <string name="register_success">Registration Successful!</string>
+
+    <!-- Roles & Genders -->
+    <string name="role_customer">Customer</string>
+    <string name="role_admin">Admin</string>
+    <string name="label_role">Register As*</string>
+    <string name="hint_role">Select Role (Customer/Admin)</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+
+    <!-- Errors -->
+    <string name="error_empty_fields">Please complete all data!</string>
+    <string name="error_invalid_email">Invalid email format!</string>
+    <string name="error_password_short">Password must be at least 6 characters!</string>
+    <string name="error_password_mismatch">Passwords do not match!</string>
+    <string name="error_login_failed">Login Failed! Check Email/Password or Server Connection.</string>
+    <string name="error_register_failed">Registration Failed! Email may already be registered.</string>
+    <string name="error_data_not_found">Data not found.</string>
+    <string name="error_must_login">Please login first</string>
+    <string name="error_no_whatsapp">WhatsApp is not installed</string>
+    <string name="error_image_permission">Failed to get image permission</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server_unavailable">Server unavailable. Please try again later.</string>
+    <string name="error_current_password_wrong">Current password is wrong!</string>
+
+    <!-- Rental Form -->
+    <string name="rental_form_title">Rental Form</string>
+    <string name="rental_form_subtitle">Please complete the rental details below.</string>
+    <string name="label_renter_name">Renter Name</string>
+    <string name="label_start_date">Rental Start Date*</string>
+    <string name="hint_select_date">Select date</string>
+    <string name="label_duration">Rental Duration (Days)*</string>
+    <string name="hint_duration_example">Example: 3</string>
+    <string name="label_pickup_location">Pickup Location*</string>
+    <string name="hint_pickup_address">Enter full address…</string>
+    <string name="payment_summary">Payment Summary</string>
+    <string name="price_per_day">Price per Day</string>
+    <string name="total_price">Total Cost</string>
+    <string name="btn_confirm_rental">Confirm Rental</string>
+    <string name="price_format">Rp %1$s</string>
+    <string name="price_per_day_format">Rp %1$s / day</string>
+    <string name="guest_name">Guest</string>
+    <string name="rental_success">Successfully rented %1$s!</string>
+    <string name="confirm_rental_title">Rental Confirmation</string>
+    <string name="confirm_rental_message">Are you sure you want to rent %1$s for %2$s days?</string>
+    <string name="btn_ya">Yes, Rent</string>
+    <string name="btn_batal">Cancel</string>
+    <string name="btn_back_desc">Back</string>
+
+    <!-- Filter Strings -->
+    <string name="title_filter">Filter &amp; Sort</string>
+    <string name="label_specification">Specification</string>
+    <string name="label_mobil">Car</string>
+    <string name="label_motor">Motorcycle</string>
+    <string name="label_matic">Automatic</string>
+    <string name="label_manual">Manual</string>
+    <string name="label_price_range">Price Range / Day</string>
+    <string name="price_range_format">Rp %1$s - Rp %2$s</string>
+    <string name="label_sort_price">Sort Price</string>
+    <string name="label_price_low">Cheapest</string>
+    <string name="label_price_high">Most Expensive</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_apply">Apply</string>
+
+    <!-- Home Strings -->
+    <string name="home_welcome">Hello, %1$s!</string>
+    <string name="home_welcome_title">Home</string>
+    <string name="home_welcome_default">Hello, User!</string>
+    <string name="home_location">📍 Jakarta, Indonesia</string>
+    <string name="home_heading">Rent your\ndream vehicle today</string>
+    <string name="home_heading_admin">Manage your\nvehicle business</string>
+    <string name="home_search_hint">Find your favorite vehicle…</string>
+    <string name="home_total_unit">Total Units</string>
+    <string name="home_rented">Rented</string>
+    <string name="home_btn_add_unit">+ Add New Unit</string>
+    <string name="home_category_title">Rental Category</string>
+    <string name="home_see_all">See All</string>
+    <string name="home_recommendation_title">Rental Recommendations</string>
+    <string name="home_recommendation_user">Recommended for You</string>
+    <string name="home_admin_list_title">Your Unit Management</string>
+
+    <!-- List Strings -->
+    <string name="list_title">Search Vehicle</string>
+    <string name="list_title_admin">My Unit List</string>
+    <string name="list_search_hint">Search vehicle or shop name…</string>
+    <string name="list_search_hint_admin">Search in my units…</string>
+    <string name="list_search_results">Search Results</string>
+
+    <!-- Ticket Strings -->
+    <string name="ticket_title">Rental History</string>
+    <string name="ticket_title_admin">Manage Customer Rentals</string>
+    <string name="ticket_status_all">All</string>
+    <string name="ticket_status_pending">Pending</string>
+    <string name="ticket_status_success">Success</string>
+    <string name="ticket_status_finished">Finished</string>
+    <string name="ticket_status_canceled">Canceled</string>
+    <string name="ticket_empty_title">No History Yet</string>
+    <string name="ticket_empty_title_admin">No Orders Yet</string>
+    <string name="ticket_empty_desc">Rental history will appear here.</string>
+    <string name="ticket_empty_desc_admin">Click the \'Pending\' tab to see new orders.</string>
+    <string name="ticket_process_success">Successfully processed order</string>
+
+    <!-- Profile Strings -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_edit">Edit Profile</string>
+    <string name="profile_help">Help Center</string>
+    <string name="profile_logout">Logout</string>
+    <string name="profile_name_default">User Name</string>
+    <string name="profile_change_photo">Change Photo</string>
+    <string name="profile_update_success">Profile updated successfully</string>
+
+    <!-- Help Center Strings -->
+    <string name="help_title">Help Center</string>
+    <string name="help_question">How can we help you?</string>
+    <string name="help_subtitle">Find answers to your questions here.</string>
+    <string name="help_popular_questions">Popular Questions</string>
+    <string name="help_faq_1">How to rent a vehicle?</string>
+    <string name="help_faq_2">What payment methods are available?</string>
+    <string name="help_faq_3">Rental cancellation policy</string>
+    <string name="help_contact_us">Contact Us</string>
+    <string name="help_chat_cs">Chat Customer Service</string>
+
+    <!-- Shop Strings -->
+    <string name="shop_collection">Vehicle Collection</string>
+    <string name="visit_shop">Visit</string>
+    <string name="verified_renter">Verified Renter</string>
+    <string name="label_products">Products</string>
+    <string name="label_rating">Rating</string>
+
+    <!-- Vehicle Item & Detail -->
+    <string name="seats_format">%1$s Seats</string>
+    <string name="unknown_name">Unknown Name</string>
+    <string name="label_renter">Renter: %1$s</string>
+    <string name="label_rental_date">Rental: %1$s</string>
+    <string name="btn_approve">Approve</string>
+    <string name="btn_reject">Reject</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_approved">Approved</string>
+    <string name="status_canceled">Canceled</string>
+    <string name="status_completed">Completed</string>
+    <string name="btn_sewa_now">Rent Now</string>
+    <string name="general_renter">General Renter</string>
+    <string name="label_rental_status">Rental Status: %1$s</string>
+    <string name="msg_approve_success">Rental Successfully Approved!</string>
+    <string name="msg_reject_success">Rental Rejected</string>
+    <string name="btn_cancel_rental">Cancel Rental</string>
+    <string name="msg_cancel_success">Your rental has been canceled</string>
+    <string name="status_processing">Processing</string>
+    <string name="status_rented">Rented</string>
+    <string name="label_vehicle_photo">Vehicle Photo</string>
+    <string name="btn_pick_photo">Pick Photo from Gallery</string>
+    <string name="title_add_vehicle">Add New Vehicle</string>
+    <string name="title_edit_vehicle">Edit Vehicle</string>
+    <string name="hint_vehicle_name">Vehicle Name (e.g., Toyota Avanza 2022)</string>
+    <string name="hint_vehicle_price">Rental Price (e.g., Rp 450.000)</string>
+    <string name="label_type">Type</string>
+    <string name="label_transmission">Transmission</string>
+    <string name="label_capacity">Capacity (7 Seats)</string>
+    <string name="label_location">Location</string>
+    <string name="label_description">Unit Description</string>
+    <string name="success_delete">Successfully deleted</string>
+
+    <!-- Settings & Profile Edit -->
+    <string name="settings_title">Settings</string>
+    <string name="account_label">Account</string>
+    <string name="change_password">Change Password</string>
+    <string name="preferences_label">Preferences</string>
+    <string name="notifications">Notifications</string>
+    <string name="language">Language</string>
+    <string name="danger_zone">Danger Zone</string>
+    <string name="delete_account">Delete Account</string>
+    <string name="current_language">English</string>
+    <string name="language_changed">Language changed to English</string>
+    <string name="feature_coming_soon">This feature is coming soon</string>
+    <string name="btn_save_changes">Save Changes</string>
+    <string name="notif_enabled">Notifications enabled</string>
+    <string name="notif_disabled">Notifications disabled</string>
+    <string name="delete_account_confirm">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="btn_delete">Delete</string>
+    <string name="delete_account_success">Account successfully deleted</string>
+
+    <!-- Change Password Strings -->
+    <string name="change_password_title">Change Password</string>
+    <string name="label_current_password">Current Password*</string>
+    <string name="hint_current_password">Enter current password…</string>
+    <string name="label_new_password">New Password*</string>
+    <string name="hint_new_password">Enter new password…</string>
+    <string name="label_confirm_new_password">Confirm New Password*</string>
+    <string name="hint_confirm_new_password">Confirm new password…</string>
+    <string name="btn_update_password">Update Password</string>
+    <string name="password_update_success">Password updated successfully</string>
+
+    <!-- Notification Strings -->
+    <string name="notification_new_rental_title">New Rental Request</string>
+    <string name="notification_new_rental_desc">There are %1$d vehicles waiting for your approval.</string>
+    <string name="notification_approved_title">Rental Approved!</string>
+    <string name="notification_approved_desc">The rental for vehicle %1$s has been approved by the admin.</string>
+</resources>

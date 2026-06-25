@@ -1,0 +1,235 @@
+<resources>
+    <string name="app_name">Kendaraiin</string>
+    <string name="tab_masuk">Masuk</string>
+    <string name="tab_register">Register</string>
+    <string name="title_login">Yuk, lanjutkan perjalananmu!</string>
+    <string name="subtitle_login">Tinggal login, dan kita langsung jalan bareng lagi!</string>
+    <string name="label_email">Email*</string>
+    <string name="hint_email">Masukkan Email…</string>
+    <string name="label_password">Password*</string>
+    <string name="hint_password">Masukkan password…</string>
+    <string name="forgot_password">Lupa Password?</string>
+    <string name="btn_masuk">Masuk Sekarang</string>
+    <string name="text_or">Atau</string>
+    <string name="btn_google">Masuk Dengan Google</string>
+    <string name="btn_guest">Mode Tamu</string>
+
+    <!-- Register Strings -->
+    <string name="title_register">Daftar dulu, biar makin gampang sewa kendaraan</string>
+    <string name="subtitle_register">Buat akunmu dan nikmati kemudahan sewa kendaraan kapan aja, di mana aja.</string>
+    <string name="info_security_title">Keamanan Data Pribadi</string>
+    <string name="info_security_desc">Data Anda terlindungi sepenuhnya berdasarkan UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (PDP).\n\nLengkapi data di bawah untuk melanjutkan proses sewa.</string>
+    <string name="label_nama_lengkap">Nama Lengkap*</string>
+    <string name="hint_nama_lengkap">Masukkan nama lengkap…</string>
+    <string name="btn_verifikasi">Verifikasi</string>
+    <string name="label_no_telp">Nomor Telepon*</string>
+    <string name="hint_no_telp">Masukkan no telepon…</string>
+    <string name="label_no_telp_darurat">Nomor Telepon Darurat*</string>
+    <string name="hint_no_telp_darurat">Masukkan no telepon darurat…</string>
+    <string name="label_jenis_kelamin">Jenis Kelamin</string>
+    <string name="hint_jenis_kelamin">Pilih Jenis Kelamin…</string>
+    <string name="label_tanggal_lahir">Tanggal Lahir*</string>
+    <string name="hint_tanggal_lahir">Pilih Tanggal Lahir…</string>
+    <string name="label_konfirmasi_password">Konfirmasi Password*</string>
+    <string name="btn_lanjut">Lanjut</string>
+    <string name="btn_daftar_google">Daftar Dengan Google</string>
+    <string name="register_success">Registrasi Berhasil!</string>
+
+    <!-- Roles & Genders -->
+    <string name="role_customer">Customer</string>
+    <string name="role_admin">Admin</string>
+    <string name="label_role">Daftar Sebagai*</string>
+    <string name="hint_role">Pilih Peran (Customer/Admin)</string>
+    <string name="gender_male">Laki-laki</string>
+    <string name="gender_female">Perempuan</string>
+
+    <!-- Errors -->
+    <string name="error_empty_fields">Mohon lengkapi semua data!</string>
+    <string name="error_invalid_email">Format email tidak valid!</string>
+    <string name="error_password_short">Password minimal 6 karakter!</string>
+    <string name="error_password_mismatch">Password tidak cocok!</string>
+    <string name="error_login_failed">Login Gagal! Email atau Password salah.</string>
+    <string name="error_register_failed">Registrasi Gagal! Email mungkin sudah terdaftar.</string>
+    <string name="error_data_not_found">Data tidak ditemukan.</string>
+    <string name="error_must_login">Silakan login terlebih dahulu</string>
+    <string name="error_no_whatsapp">WhatsApp tidak terpasang</string>
+    <string name="error_image_permission">Gagal mengambil izin gambar</string>
+    <string name="error_network">Kesalahan jaringan. Mohon periksa koneksi Anda.</string>
+    <string name="error_server_unavailable">Server tidak tersedia. Mohon coba lagi nanti.</string>
+
+    <!-- Rental Form -->
+    <string name="rental_form_title">Formulir Penyewaan</string>
+    <string name="rental_form_subtitle">Silakan lengkapi data penyewaan di bawah ini.</string>
+    <string name="label_renter_name">Nama Penyewa</string>
+    <string name="label_start_date">Tanggal Mulai Sewa*</string>
+    <string name="hint_select_date">Pilih tanggal</string>
+    <string name="label_duration">Durasi Sewa (Hari)*</string>
+    <string name="hint_duration_example">Contoh: 3</string>
+    <string name="label_pickup_location">Lokasi Penjemputan*</string>
+    <string name="hint_pickup_address">Masukkan alamat lengkap…</string>
+    <string name="payment_summary">Ringkasan Pembayaran</string>
+    <string name="price_per_day">Harga per Hari</string>
+    <string name="total_price">Total Biaya</string>
+    <string name="btn_confirm_rental">Konfirmasi Sewa</string>
+    <string name="price_format">Rp %1$s</string>
+    <string name="price_per_day_format">Rp %1$s / hari</string>
+    <string name="guest_name">Tamu</string>
+    <string name="rental_success">Berhasil menyewa %1$s!</string>
+    <string name="confirm_rental_title">Konfirmasi Penyewaan</string>
+    <string name="confirm_rental_message">Apakah Anda yakin ingin menyewa %1$s selama %2$s hari?</string>
+    <string name="btn_ya">Ya, Sewa</string>
+    <string name="btn_batal">Batal</string>
+    <string name="btn_back_desc">Kembali</string>
+
+    <!-- Filter Strings -->
+    <string name="title_filter">Filter &amp; Urutkan</string>
+    <string name="label_specification">Spesifikasi</string>
+    <string name="label_mobil">Mobil</string>
+    <string name="label_motor">Motor</string>
+    <string name="label_matic">Matic</string>
+    <string name="label_manual">Manual</string>
+    <string name="label_price_range">Rentang Harga / Hari</string>
+    <string name="price_range_format">Rp %1$s - Rp %2$s</string>
+    <string name="label_sort_price">Urutkan Harga</string>
+    <string name="label_price_low">Termurah</string>
+    <string name="label_price_high">Termahal</string>
+    <string name="btn_reset">Reset</string>
+    <string name="btn_apply">Terapkan</string>
+
+    <!-- Home Strings -->
+    <string name="home_welcome">Halo, %1$s!</string>
+    <string name="home_welcome_title">Beranda</string>
+    <string name="home_welcome_default">Halo, Pengguna!</string>
+    <string name="home_location">📍 Jakarta, Indonesia</string>
+    <string name="home_heading">Sewa kendaraan\nimpianmu hari ini</string>
+    <string name="home_heading_admin">Kelola bisnis\nkendaraan Anda</string>
+    <string name="home_search_hint">Cari kendaraan favoritmu…</string>
+    <string name="home_total_unit">Total Unit</string>
+    <string name="home_rented">Disewa</string>
+    <string name="home_btn_add_unit">+ Tambah Unit Baru</string>
+    <string name="home_category_title">Kategori Sewa</string>
+    <string name="home_see_all">Lihat Semua</string>
+    <string name="home_recommendation_title">Rekomendasi Sewa</string>
+    <string name="home_recommendation_user">Rekomendasi Untukmu</string>
+    <string name="home_admin_list_title">Manajemen Unit Anda</string>
+
+    <!-- List Strings -->
+    <string name="list_title">Cari Kendaraan</string>
+    <string name="menu_search">Pencarian</string>
+    <string name="list_title_admin">Daftar Unit Saya</string>
+    <string name="list_search_hint">Cari kendaraan atau nama toko…</string>
+    <string name="list_search_hint_admin">Cari di unit saya…</string>
+    <string name="list_search_results">Hasil Pencarian</string>
+
+    <!-- Ticket Strings -->
+    <string name="ticket_title">Riwayat Sewa</string>
+    <string name="ticket_title_admin">Kelola Sewa Pelanggan</string>
+    <string name="ticket_status_all">Semua</string>
+    <string name="ticket_status_pending">Menunggu</string>
+    <string name="ticket_status_success">Berhasil</string>
+    <string name="ticket_status_finished">Selesai</string>
+    <string name="ticket_status_canceled">Dibatalkan</string>
+    <string name="ticket_empty_title">Belum Ada Riwayat</string>
+    <string name="ticket_empty_title_admin">Belum Ada Pesanan</string>
+    <string name="ticket_empty_desc">Riwayat sewa kendaraan akan muncul di sini.</string>
+    <string name="ticket_empty_desc_admin">Klik tab \'Menunggu\' untuk melihat pesanan baru.</string>
+    <string name="ticket_process_success">Berhasil memproses pesanan</string>
+
+    <!-- Profile Strings -->
+    <string name="profile_title">Profil</string>
+    <string name="profile_edit">Edit Profil</string>
+    <string name="profile_help">Pusat Bantuan</string>
+    <string name="profile_logout">Keluar</string>
+    <string name="profile_name_default">Nama Pengguna</string>
+    <string name="profile_change_photo">Ubah Foto</string>
+    <string name="profile_update_success">Profil berhasil diperbarui</string>
+
+    <!-- Help Center Strings -->
+    <string name="help_title">Pusat Bantuan</string>
+    <string name="help_question">Apa yang bisa kami bantu?</string>
+    <string name="help_subtitle">Temukan jawaban untuk pertanyaan Anda di sini.</string>
+    <string name="help_popular_questions">Pertanyaan Populer</string>
+    <string name="help_faq_1">Bagaimana cara menyewa kendaraan?</string>
+    <string name="help_faq_2">Metode pembayaran apa saja yang tersedia?</string>
+    <string name="help_faq_3">Kebijakan pembatalan sewa</string>
+    <string name="help_contact_us">Hubungi Kami</string>
+    <string name="help_chat_cs">Chat Customer Service</string>
+
+    <!-- Shop Strings -->
+    <string name="shop_collection">Koleksi Kendaraan</string>
+    <string name="visit_shop">Kunjungi</string>
+    <string name="verified_renter">Penyewa Terverifikasi</string>
+    <string name="label_products">Produk</string>
+    <string name="label_rating">Rating</string>
+
+    <!-- Vehicle Item & Detail -->
+    <string name="seats_format">%1$s Kursi</string>
+    <string name="unknown_name">Tanpa Nama</string>
+    <string name="label_renter">Penyewa: %1$s</string>
+    <string name="label_rental_date">Sewa: %1$s</string>
+    <string name="btn_approve">Setujui</string>
+    <string name="btn_reject">Tolak</string>
+    <string name="btn_cancel">Batalkan</string>
+    <string name="status_pending">Menunggu</string>
+    <string name="status_approved">Disetujui</string>
+    <string name="status_canceled">Dibatalkan</string>
+    <string name="status_completed">Selesai</string>
+    <string name="btn_sewa_now">Sewa Sekarang</string>
+    <string name="general_renter">Penyewa Umum</string>
+    <string name="label_rental_status">Status Sewa: %1$s</string>
+    <string name="msg_approve_success">Sewa Berhasil Disetujui!</string>
+    <string name="msg_reject_success">Sewa Ditolak</string>
+    <string name="btn_cancel_rental">Batalkan Sewa</string>
+    <string name="msg_cancel_success">Sewa Anda telah dibatalkan</string>
+    <string name="status_processing">Sedang Diproses</string>
+    <string name="status_rented">Sudah Disewa</string>
+    <string name="label_vehicle_photo">Foto Kendaraan</string>
+    <string name="btn_pick_photo">Pilih Foto dari Galeri</string>
+    <string name="title_add_vehicle">Tambah Kendaraan Baru</string>
+    <string name="title_edit_vehicle">Edit Kendaraan</string>
+    <string name="hint_vehicle_name">Nama Kendaraan (Contoh: Toyota Avanza 2022)</string>
+    <string name="hint_vehicle_price">Harga Sewa (Contoh: Rp 450.000)</string>
+    <string name="label_type">Tipe</string>
+    <string name="label_transmission">Transmisi</string>
+    <string name="label_capacity">Kapasitas (7 Kursi)</string>
+    <string name="label_location">Lokasi</string>
+    <string name="label_description">Deskripsi Unit</string>
+    <string name="success_delete">Berhasil dihapus</string>
+
+    <!-- Settings & Profile Edit -->
+    <string name="settings_title">Pengaturan</string>
+    <string name="account_label">Akun</string>
+    <string name="change_password">Ganti Kata Sandi</string>
+    <string name="preferences_label">Preferensi</string>
+    <string name="notifications">Notifikasi</string>
+    <string name="language">Bahasa</string>
+    <string name="danger_zone">Zona Bahaya</string>
+    <string name="delete_account">Hapus Akun</string>
+    <string name="current_language">Indonesia</string>
+    <string name="language_changed">Bahasa diubah ke Indonesia</string>
+    <string name="feature_coming_soon">Fitur ini akan segera hadir</string>
+    <string name="btn_save_changes">Simpan Perubahan</string>
+    <string name="notif_enabled">Notifikasi diaktifkan</string>
+    <string name="notif_disabled">Notifikasi dimatikan</string>
+    <string name="delete_account_confirm">Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="btn_delete">Hapus</string>
+    <string name="delete_account_success">Akun berhasil dihapus</string>
+
+    <!-- Change Password Strings -->
+    <string name="change_password_title">Ubah Password</string>
+    <string name="label_current_password">Password Saat Ini*</string>
+    <string name="hint_current_password">Masukkan password saat ini…</string>
+    <string name="label_new_password">Password Baru*</string>
+    <string name="hint_new_password">Masukkan password baru…</string>
+    <string name="label_confirm_new_password">Konfirmasi Password Baru*</string>
+    <string name="hint_confirm_new_password">Konfirmasi password baru…</string>
+    <string name="btn_update_password">Perbarui Password</string>
+    <string name="error_current_password_wrong">Password saat ini salah!</string>
+    <string name="password_update_success">Password berhasil diperbarui</string>
+
+    <!-- Notification Strings -->
+    <string name="notification_new_rental_title">Permintaan Sewa Baru</string>
+    <string name="notification_new_rental_desc">Ada %1$d kendaraan yang menunggu persetujuan Anda.</string>
+    <string name="notification_approved_title">Sewa Disetujui!</string>
+    <string name="notification_approved_desc">Penyewaan kendaraan %1$s telah disetujui oleh admin.</string>
+</resources>

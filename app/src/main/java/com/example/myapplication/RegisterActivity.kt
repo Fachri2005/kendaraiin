@@ -3,29 +3,34 @@ package com.example.myapplication
 import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication.databinding.ActivityRegisterBinding
 import java.util.Calendar
+import java.util.Locale
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
-    private lateinit var userRepository: UserRepository
+    private val userViewModel: UserViewModel by viewModels { ViewModelFactory(this) }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+        enableEdgeToEdge()
         binding = ActivityRegisterBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        enableEdgeToEdge()
-        
-        userRepository = UserRepository(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -33,97 +38,123 @@ class RegisterActivity : AppCompatActivity() {
             insets
         }
 
-        // Setup Role Dropdown
-        val roles = arrayOf("Customer", "Admin")
-        val roleAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, roles)
-        binding.actvRole.setAdapter(roleAdapter)
+        setupDropdowns()
+        setupObservers()
+        setupDatePicker()
 
-        // Setup Gender Dropdown
-        val genders = arrayOf("Laki-laki", "Perempuan")
-        val genderAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, genders)
-        binding.actvGender.setAdapter(genderAdapter)
-
-        // Setup Date Picker
-        binding.etBirth.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            val year = calendar.get(Calendar.YEAR)
-            val month = calendar.get(Calendar.MONTH)
-            val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-            val datePickerDialog = DatePickerDialog(
-                this,
-                { _, selectedYear, selectedMonth, selectedDay ->
-                    val date = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-                    binding.etBirth.setText(date)
-                },
-                year,
-                month,
-                day
-            )
-            datePickerDialog.show()
-        }
-
-        // Tab Navigation
         binding.btnMasukTab.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
             finish()
-            overridePendingTransition(0, 0)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
+            } else {
+                @Suppress("DEPRECATION")
+                overridePendingTransition(0, 0)
+            }
         }
 
-        // Validation & Registration Logic
         binding.btnLanjut.setOnClickListener {
-            val role = binding.actvRole.text.toString().trim()
-            val nama = binding.etNama.text.toString().trim()
+            val name = binding.etNama.text.toString().trim()
             val email = binding.etEmail.text.toString().trim()
-            val telp = binding.etTelp.text.toString().trim()
-            val telpDarurat = binding.etTelpDarurat.text.toString().trim()
-            val gender = binding.actvGender.text.toString().trim()
-            val birth = binding.etBirth.text.toString().trim()
+            val phone = binding.etTelp.text.toString().trim()
+            val emergencyPhone = binding.etTelpDarurat.text.toString().trim()
+            val gender = binding.actvGender.text.toString()
+            val birthDate = binding.etBirth.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
             val confirmPassword = binding.etConfirmPassword.text.toString().trim()
+            val role = binding.actvRole.text.toString().ifEmpty { getString(R.string.role_customer) }
 
-            if (role.isEmpty() || nama.isEmpty() || email.isEmpty() || telp.isEmpty() || 
-                telpDarurat.isEmpty() || gender.isEmpty() || birth.isEmpty() || 
-                password.isEmpty() || confirmPassword.isEmpty()) {
-                
-                Toast.makeText(this, "Mohon lengkapi semua data!", Toast.LENGTH_SHORT).show()
-            } else if (password != confirmPassword) {
-                Toast.makeText(this, "Password tidak cocok!", Toast.LENGTH_SHORT).show()
-            } else {
-                // Save User to SQLite Database with Phone Number
-                val result = userRepository.registerUser(nama, email, password, role, telp)
+            // Validasi Input (Poin 1: Perbaikan Validasi)
+            if (name.isEmpty() || email.isEmpty() || phone.isEmpty() || 
+                emergencyPhone.isEmpty() || birthDate.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+                Toast.makeText(this, getString(R.string.error_empty_fields), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                if (result != -1L) {
-                    // Save Session to SharedPreferences
-                    val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                    val editor = sharedPref.edit()
-                    editor.putBoolean("is_logged_in", true)
-                    editor.putString("user_email", email)
-                    editor.putString("user_name", nama)
-                    editor.putString("user_role", role)
-                    editor.apply()
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, getString(R.string.error_invalid_email), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                    Toast.makeText(this, "Registrasi Berhasil sebagai $role!", Toast.LENGTH_SHORT).show()
+            if (password.length < 6) {
+                Toast.makeText(this, getString(R.string.error_password_short), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (password != confirmPassword) {
+                Toast.makeText(this, getString(R.string.error_password_mismatch), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val newUser = User(
+                name = name,
+                email = email,
+                password = password,
+                role = role,
+                phone = phone,
+                emergencyPhone = emergencyPhone,
+                gender = gender,
+                birthDate = birthDate
+            )
+            userViewModel.register(newUser)
+        }
+    }
+
+    private fun setupDropdowns() {
+        val genders = arrayOf(getString(R.string.gender_male), getString(R.string.gender_female))
+        val genderAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, genders)
+        binding.actvGender.setAdapter(genderAdapter)
+
+        val roles = arrayOf(getString(R.string.role_customer), getString(R.string.role_admin))
+        val roleAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, roles)
+        binding.actvRole.setAdapter(roleAdapter)
+    }
+
+    private fun setupDatePicker() {
+        binding.etBirth.showSoftInputOnFocus = false
+        
+        val showDialog = {
+            val calendar = Calendar.getInstance()
+            DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    val date = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth)
+                    binding.etBirth.setText(date)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+
+        binding.etBirth.setOnClickListener { showDialog() }
+        binding.etBirth.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) showDialog()
+        }
+    }
+
+    private fun setupObservers() {
+        // Poin 2: Implementasi EventWrapper agar tidak terpicu berulang saat rotasi
+        userViewModel.isSuccess.observe(this) { event ->
+            event.getContentIfNotHandled()?.let { success ->
+                if (success) {
+                    Toast.makeText(this, getString(R.string.register_success), Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, HomeActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
                     finish()
-                } else {
-                    Toast.makeText(this, "Registrasi Gagal! Email mungkin sudah digunakan.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
-        // Guest Mode
-        binding.btnGuest.setOnClickListener {
-            val sharedPref = getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putBoolean("is_logged_in", true)
-            editor.putString("user_name", "Tamu")
-            editor.putString("user_email", "guest@kendaraiin.com")
-            editor.putString("user_role", "Customer")
-            editor.apply()
-            startActivity(Intent(this, HomeActivity::class.java))
-            finish()
+        userViewModel.error.observe(this) { event ->
+            event.getContentIfNotHandled()?.let { errorResId ->
+                // Jika errorResId tidak null, tampilkan toast
+                Toast.makeText(this, getString(errorResId), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        userViewModel.isLoading.observe(this) { isLoading ->
+            binding.btnLanjut.isEnabled = !isLoading
         }
     }
 }

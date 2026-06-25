@@ -9,9 +9,8 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
 
     companion object {
         private const val DATABASE_NAME = "kendaraiin.db"
-        private const val DATABASE_VERSION = 9 // Upgrade to version 9 for renter_email
+        private const val DATABASE_VERSION = 11 // Upgraded to include rental_status
         
-        // Table Events
         const val TABLE_NAME = "events"
         const val COLUMN_ID = "id"
         const val COLUMN_NAME = "name"
@@ -24,9 +23,14 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
         const val COLUMN_TRANSMISSION = "transmission"
         const val COLUMN_SEATS = "seats"
         const val COLUMN_LOCATION = "location"
-        const val COLUMN_RENTER_EMAIL = "renter_email" // New column for history
+        const val COLUMN_RENTER_EMAIL = "renter_email"
+        
+        // Rental columns
+        const val COLUMN_RENTAL_START_DATE = "rental_start_date"
+        const val COLUMN_RENTAL_DURATION = "rental_duration"
+        const val COLUMN_PICKUP_LOCATION = "pickup_location"
+        const val COLUMN_RENTAL_STATUS = "rental_status" // New column
 
-        // Table Users
         const val TABLE_USERS = "users"
         const val COLUMN_USER_ID = "user_id"
         const val COLUMN_USER_NAME = "user_name"
@@ -50,7 +54,11 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
                 "$COLUMN_TRANSMISSION TEXT," +
                 "$COLUMN_SEATS TEXT," +
                 "$COLUMN_LOCATION TEXT," +
-                "$COLUMN_RENTER_EMAIL TEXT)")
+                "$COLUMN_RENTER_EMAIL TEXT," +
+                "$COLUMN_RENTAL_START_DATE TEXT," +
+                "$COLUMN_RENTAL_DURATION INTEGER," +
+                "$COLUMN_PICKUP_LOCATION TEXT," +
+                "$COLUMN_RENTAL_STATUS TEXT)")
         db.execSQL(createEventsTable)
 
         val createUsersTable = ("CREATE TABLE $TABLE_USERS (" +
@@ -67,25 +75,13 @@ class EventDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 2) db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_ADMIN_EMAIL TEXT")
-        if (oldVersion < 3) {
-            db.execSQL("CREATE TABLE IF NOT EXISTS $TABLE_USERS ($COLUMN_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT, $COLUMN_USER_NAME TEXT, $COLUMN_USER_EMAIL TEXT UNIQUE, $COLUMN_USER_PASSWORD TEXT, $COLUMN_USER_ROLE TEXT)")
+        if (oldVersion < 10) {
+            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTAL_START_DATE TEXT")
+            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTAL_DURATION INTEGER")
+            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_PICKUP_LOCATION TEXT")
         }
-        if (oldVersion < 4) db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_IMAGE_URI TEXT")
-        if (oldVersion < 5) db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_VEHICLE_TYPE TEXT")
-        if (oldVersion < 6) {
-            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_TRANSMISSION TEXT")
-            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_SEATS TEXT")
-            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_LOCATION TEXT")
-        }
-        if (oldVersion < 7) {
-            db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_PHONE TEXT")
-        }
-        if (oldVersion < 8) {
-            db.execSQL("ALTER TABLE $TABLE_USERS ADD COLUMN $COLUMN_USER_IMAGE TEXT")
-        }
-        if (oldVersion < 9) {
-            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTER_EMAIL TEXT")
+        if (oldVersion < 11) {
+            db.execSQL("ALTER TABLE $TABLE_NAME ADD COLUMN $COLUMN_RENTAL_STATUS TEXT")
         }
     }
 

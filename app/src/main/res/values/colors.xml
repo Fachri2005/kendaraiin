@@ -2,20 +2,17 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="green_primary">#4CAF50</color>
-    <color name="green_light">#E8F5E9</color>
-    <color name="blue_primary">#1A2B4C</color>
-    <color name="orange_primary">#FF9800</color>
+    <color name="primary_blue">#294669</color>
+    <color name="green_primary">#294669</color>
     <color name="gray_text">#757575</color>
-    <color name="gray_light">#F5F5F5</color>
     <color name="gray_border">#E0E0E0</color>
     <color name="gray_bg">#F8F9FA</color>
     <color name="blue_info_bg">#E3F2FD</color>
     <color name="blue_info_text">#1976D2</color>
-    <color name="nav_bg">#1A2B4C</color>
-    <color name="brand_all_bg">#1A2B4C</color>
-    <color name="text_primary">#1A1A1A</color>
-    <color name="text_secondary">#757575</color>
-    <color name="accent_blue_dark">#1A2B4C</color>
-    <color name="star_yellow">#FFC107</color>
+
+    <!-- Status Colors -->
+    <color name="status_approved">#4CAF50</color>
+    <color name="status_canceled">#E53935</color>
+    <color name="status_completed">#2196F3</color>
+    <color name="status_pending">#FFA000</color>
 </resources>
