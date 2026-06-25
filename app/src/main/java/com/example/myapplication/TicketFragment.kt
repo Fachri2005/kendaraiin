@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,25 +15,19 @@ class TicketFragment : Fragment() {
     private var _binding: FragmentTicketBinding? = null
     private val binding get() = _binding!!
 
-    // Menggunakan activityViewModels agar datanya sama dengan HomeActivity
     private val eventViewModel: EventViewModel by activityViewModels { ViewModelFactory(requireContext()) }
     private val userViewModel: UserViewModel by activityViewModels { ViewModelFactory(requireContext()) }
     
     private lateinit var adapter: EventAdapter
     private var currentStatusFilter: String = "semua"
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTicketBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
 
         if (isAdmin) {
@@ -46,30 +39,13 @@ class TicketFragment : Fragment() {
         setupRecyclerView(isAdmin)
         setupFilters()
         observeViewModel()
-
         loadData()
         binding.swipeRefresh.setOnRefreshListener { loadData() }
-    }
-
-    private fun loadData() {
-        val userRole = userViewModel.getUserRole()
-        val userEmail = userViewModel.getUserEmail()
-        val isAdmin = userRole?.equals("Admin", ignoreCase = true) == true
-        eventViewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
-    }
-
-    private fun setupFilters() {
-        binding.chipAll.setOnClickListener { currentStatusFilter = "semua"; applyFilters() }
-        binding.chipPending.setOnClickListener { currentStatusFilter = "pending"; applyFilters() }
-        binding.chipActive.setOnClickListener { currentStatusFilter = "approved"; applyFilters() }
-        binding.chipFinished.setOnClickListener { currentStatusFilter = "completed"; applyFilters() }
-        binding.chipCanceled.setOnClickListener { currentStatusFilter = "canceled"; applyFilters() }
     }
 
     private fun setupRecyclerView(isAdmin: Boolean) {
         val userEmail = userViewModel.getUserEmail() ?: ""
         adapter = EventAdapter(
-            events = emptyList(),
             isAdmin = isAdmin,
             isHistory = true,
             onItemClick = { event ->
@@ -86,42 +62,30 @@ class TicketFragment : Fragment() {
 
     private fun observeViewModel() {
         eventViewModel.events.observe(viewLifecycleOwner) { applyFilters() }
-        
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            if (!binding.swipeRefresh.isRefreshing) {
-                binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            }
+            if (!binding.swipeRefresh.isRefreshing) binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
-
-        // PERBAIKAN: Menggunakan EventWrapper agar pesan error muncul dengan benar
         eventViewModel.error.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { errorResId ->
-                errorResId?.let {
-                    Toast.makeText(context, getString(it), Toast.LENGTH_LONG).show()
-                }
+                errorResId?.let { if (isAdded) Toast.makeText(context, getString(it), Toast.LENGTH_SHORT).show() }
                 binding.swipeRefresh.isRefreshing = false
             }
         }
     }
 
     private fun applyFilters() {
+        if (_binding == null) return
         val allEvents = eventViewModel.events.value ?: emptyList()
-        val userRole = userViewModel.getUserRole() ?: "Customer"
         val userEmail = userViewModel.getUserEmail() ?: ""
-        val isAdmin = userRole.equals("Admin", ignoreCase = true)
+        val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
         
         val filteredList = allEvents.filter { event ->
             val status = event.effectiveStatus
-
             val isMine = if (isAdmin) {
-                // Admin melihat kiriman miliknya yang ada status sewanya
-                val matchAdmin = event.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true)
-                matchAdmin && status.isNotEmpty()
+                event.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) && status.isNotEmpty()
             } else {
-                // Customer melihat yang disewa oleh dirinya
                 event.renterEmail?.trim().equals(userEmail.trim(), ignoreCase = true)
             }
-
             val matchesStatus = if (currentStatusFilter == "semua") true else status == currentStatusFilter
             isMine && matchesStatus
         }
@@ -137,8 +101,19 @@ class TicketFragment : Fragment() {
         binding.swipeRefresh.isRefreshing = false
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun loadData() {
+        val userEmail = userViewModel.getUserEmail()
+        val isAdmin = userViewModel.getUserRole()?.equals("Admin", ignoreCase = true) == true
+        eventViewModel.fetchEventsFromApi(if (isAdmin) userEmail else null)
     }
+
+    private fun setupFilters() {
+        binding.chipAll.setOnClickListener { currentStatusFilter = "semua"; applyFilters() }
+        binding.chipPending.setOnClickListener { currentStatusFilter = "pending"; applyFilters() }
+        binding.chipActive.setOnClickListener { currentStatusFilter = "approved"; applyFilters() }
+        binding.chipFinished.setOnClickListener { currentStatusFilter = "completed"; applyFilters() }
+        binding.chipCanceled.setOnClickListener { currentStatusFilter = "canceled"; applyFilters() }
+    }
+
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }

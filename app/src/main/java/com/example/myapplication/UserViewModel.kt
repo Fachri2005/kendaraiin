@@ -56,7 +56,15 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             try {
                 val success = repository.registerUser(user)
                 if (success) {
-                    repository.saveLoginSession(user)
+                    // Perbaikan Kritis: Lakukan login otomatis untuk mendapatkan data user lengkap (ID) dari server
+                    val loggedInUser = repository.loginUser(user.email, user.password ?: "")
+                    if (loggedInUser != null) {
+                        repository.saveLoginSession(loggedInUser)
+                        _user.postValue(loggedInUser)
+                    } else {
+                        repository.saveLoginSession(user)
+                        _user.postValue(user)
+                    }
                     _isSuccess.postValue(EventWrapper(true))
                     _error.postValue(EventWrapper(null))
                 } else {

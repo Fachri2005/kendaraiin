@@ -4,6 +4,8 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.Response
 
 class EventRepository(context: Context, val apiService: ApiService = RetrofitClient.apiService) {
@@ -16,13 +18,10 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
     suspend fun updateEventToApi(id: Int, event: Event): Response<ApiResponse<Unit>> = apiService.updateEvent(id, event)
     suspend fun deleteEventFromApi(id: Int, adminEmail: String? = null): Response<ApiResponse<Unit>> = apiService.deleteEvent(id, adminEmail)
 
-    fun saveEventsToLocal(events: List<Event>) {
+    suspend fun saveEventsToLocal(events: List<Event>) = withContext(Dispatchers.IO) {
         val db = dbHelper.writableDatabase
         db.beginTransaction()
         try {
-            // Perbaikan Bug: Jangan hapus SEMUA data jika yang diunduh hanya parsial (misal filter admin)
-            // Strategi: Gunakan REPLACE untuk update/insert, dan hanya hapus jika benar-benar perlu.
-            
             for (event in events) {
                 val values = ContentValues().apply {
                     put(EventDatabaseHelper.COLUMN_ID, event.id)
@@ -50,7 +49,7 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
         }
     }
 
-    fun updateRentalStatusLocal(id: Int, status: String): Boolean {
+    suspend fun updateRentalStatusLocal(id: Int, status: String): Boolean = withContext(Dispatchers.IO) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(EventDatabaseHelper.COLUMN_RENTAL_STATUS, status)
@@ -58,10 +57,10 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             else if (status == "canceled" || status == "completed") put(EventDatabaseHelper.COLUMN_IS_REGISTERED, 0)
         }
         val result = db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
-        return result > 0
+        result > 0
     }
 
-    fun getAllEventsFromLocal(): List<Event> {
+    suspend fun getAllEventsFromLocal(): List<Event> = withContext(Dispatchers.IO) {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} ORDER BY ${EventDatabaseHelper.COLUMN_ID} DESC", null)
@@ -69,19 +68,19 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             do { eventList.add(cursorToEvent(cursor)) } while (cursor.moveToNext())
         }
         cursor.close()
-        return eventList
+        eventList
     }
 
-    fun getEventById(id: Int): Event? {
+    suspend fun getEventById(id: Int): Event? = withContext(Dispatchers.IO) {
         val db = dbHelper.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
         var event: Event? = null
         if (cursor.moveToFirst()) event = cursorToEvent(cursor)
         cursor.close()
-        return event
+        event
     }
 
-    fun getEventsByAdmin(adminEmail: String): List<Event> {
+    suspend fun getEventsByAdmin(adminEmail: String): List<Event> = withContext(Dispatchers.IO) {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.rawQuery(
@@ -92,10 +91,10 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             do { eventList.add(cursorToEvent(cursor)) } while (cursor.moveToNext())
         }
         cursor.close()
-        return eventList
+        eventList
     }
 
-    fun rentVehicleLocal(id: Int, renterEmail: String, startDate: String, duration: Int, pickup: String): Boolean {
+    suspend fun rentVehicleLocal(id: Int, renterEmail: String, startDate: String, duration: Int, pickup: String): Boolean = withContext(Dispatchers.IO) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(EventDatabaseHelper.COLUMN_IS_REGISTERED, 1)
@@ -106,10 +105,10 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             put(EventDatabaseHelper.COLUMN_RENTAL_STATUS, "pending")
         }
         val result = db.update(EventDatabaseHelper.TABLE_NAME, values, "${EventDatabaseHelper.COLUMN_ID} = ?", arrayOf(id.toString()))
-        return result > 0
+        result > 0
     }
 
-    fun searchVehicles(query: String): List<Event> {
+    suspend fun searchVehicles(query: String): List<Event> = withContext(Dispatchers.IO) {
         val eventList = mutableListOf<Event>()
         val db = dbHelper.readableDatabase
         val cursor: Cursor = db.rawQuery("SELECT * FROM ${EventDatabaseHelper.TABLE_NAME} WHERE ${EventDatabaseHelper.COLUMN_NAME} LIKE ?", arrayOf("%$query%"))
@@ -117,7 +116,7 @@ class EventRepository(context: Context, val apiService: ApiService = RetrofitCli
             do { eventList.add(cursorToEvent(cursor)) } while (cursor.moveToNext())
         }
         cursor.close()
-        return eventList
+        eventList
     }
 
     private fun cursorToEvent(cursor: Cursor): Event {

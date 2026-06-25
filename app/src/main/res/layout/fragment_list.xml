@@ -19,97 +19,119 @@
             app:titleTextColor="@color/black" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipeRefresh"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.core.widget.NestedScrollView
+        <!-- Search Bar -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardSearchList"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="24dp">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="4dp">
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#EEEEEE" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="@color/gray_text" />
 
-                <!-- Search Bar -->
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/cardSearchList"
-                    android:layout_width="match_parent"
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp">
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/list_search_hint"
+                    android:paddingVertical="12dp"
+                    android:textSize="14sp"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="4dp">
+        <TextView
+            android:id="@+id/tvListTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/list_search_results"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginStart="8dp"
-                            android:src="@android:drawable/ic_menu_search"
-                            app:tint="@color/gray_text" />
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
 
-                        <EditText
-                            android:id="@+id/etSearch"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:background="@android:color/transparent"
-                            android:hint="@string/list_search_hint"
-                            android:paddingVertical="12dp"
-                            android:textSize="14sp"
-                            android:inputType="text"
-                            android:maxLines="1" />
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/tvListTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginTop="24dp"
-                    android:text="@string/list_search_results"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone" />
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/swipeRefresh"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="8dp">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvEvents"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_height="match_parent"
                     android:paddingHorizontal="8dp"
+                    android:clipToPadding="false"
+                    android:paddingBottom="80dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_event" />
 
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+            <!-- Layout Empty State -->
+            <LinearLayout
+                android:id="@+id/layoutEmpty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="@color/gray_text"
+                    android:alpha="0.5" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/error_data_not_found"
+                    android:textColor="@color/gray_text"
+                    android:textSize="16sp" />
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </FrameLayout>
+    </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

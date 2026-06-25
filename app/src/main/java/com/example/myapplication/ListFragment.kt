@@ -8,14 +8,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ListFragment : Fragment() {
 
@@ -26,9 +33,11 @@ class ListFragment : Fragment() {
     private lateinit var tvListTitle: TextView
     private lateinit var progressBar: ProgressBar
     private lateinit var swipeRefresh: SwipeRefreshLayout
+    private lateinit var layoutEmpty: LinearLayout
     
     private var isAdmin: Boolean = false
     private var userEmail: String = ""
+    private var filterJob: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,18 +51,19 @@ class ListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val factory = ViewModelFactory(requireContext())
-        viewModel = ViewModelProvider(requireActivity(), factory)[EventViewModel::class.java]
+        // Menggunakan scope 'this' agar ViewModel dibersihkan saat fragment hancur
+        viewModel = ViewModelProvider(this, factory)[EventViewModel::class.java]
 
         rvEvents = view.findViewById(R.id.rvEvents)
         etSearch = view.findViewById(R.id.etSearch)
         tvListTitle = view.findViewById(R.id.tvListTitle)
         progressBar = view.findViewById(R.id.progressBar)
         swipeRefresh = view.findViewById(R.id.swipeRefresh)
+        layoutEmpty = view.findViewById(R.id.layoutEmpty)
 
         val sharedPref = requireActivity().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-        val userRole = sharedPref.getString("user_role", "Customer")
         userEmail = sharedPref.getString("user_email", "") ?: ""
-        isAdmin = userRole == "Admin"
+        isAdmin = sharedPref.getString("user_role", "Customer") == "Admin"
 
         if (isAdmin) {
             tvListTitle.text = getString(R.string.list_title_admin)
@@ -80,13 +90,17 @@ class ListFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = EventAdapter(
-            events = emptyList(),
             isAdmin = isAdmin,
             onItemClick = { event -> 
                 val bundle = Bundle().apply { putInt("vehicle_id", event.id) }
                 findNavController().navigate(R.id.navigation_detail, bundle)
             },
-            onDeleteClick = { /* Opsional */ }
+            onDeleteClick = { event ->
+                // Panggil viewModel.deleteEvent jika diperlukan
+                viewModel.deleteEvent(event.id, userEmail) {
+                    Toast.makeText(context, R.string.success_delete, Toast.LENGTH_SHORT).show()
+                }
+            }
         )
         rvEvents.adapter = adapter
     }
@@ -103,37 +117,54 @@ class ListFragment : Fragment() {
             }
         }
 
-        // PERBAIKAN: Menggunakan EventWrapper agar pesan error muncul dengan benar
         viewModel.error.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { errorResId ->
-                errorResId?.let {
-                    Toast.makeText(context, getString(it), Toast.LENGTH_SHORT).show()
+                if (errorResId != null && errorResId != 0 && isAdded) {
+                    Toast.makeText(context ?: return@let, getString(errorResId), Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
     private fun applyFilter(query: String) {
+        filterJob?.cancel() // Batalkan proses filter sebelumnya (Debounce)
+        
         val allEvents = viewModel.events.value ?: emptyList()
         
-        val myUnits = if (isAdmin) {
-            allEvents.filter { 
-                it.adminEmail?.trim().equals(userEmail.trim(), ignoreCase = true) 
-            }
-        } else {
-            allEvents
-        }
+        filterJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+            // Delay 300ms untuk memberikan efek debounce saat mengetik
+            delay(300)
+            
+            val trimmedQuery = query.lowercase().trim()
+            val trimmedUserEmail = userEmail.lowercase().trim()
 
-        val filtered = if (query.isEmpty()) {
-            myUnits
-        } else {
-            myUnits.filter { 
-                it.name.contains(query, ignoreCase = true) || 
-                it.vehicleType?.contains(query, ignoreCase = true) == true ||
-                it.location?.contains(query, ignoreCase = true) == true
+            val filtered = allEvents.filter { event ->
+                val matchesVisibility = if (isAdmin) {
+                    event.adminEmail?.lowercase()?.trim() == trimmedUserEmail
+                } else {
+                    !event.isRegistered 
+                }
+                
+                val matchesQuery = trimmedQuery.isEmpty() || 
+                        event.name?.contains(trimmedQuery, ignoreCase = true) == true || 
+                        event.vehicleType?.contains(trimmedQuery, ignoreCase = true) == true || 
+                        event.location?.contains(trimmedQuery, ignoreCase = true) == true
+                
+                matchesVisibility && matchesQuery
+            }
+
+            withContext(Dispatchers.Main) {
+                if (isAdded) {
+                    adapter.updateData(filtered, isAdmin)
+                    // Tampilkan Empty State jika hasil pencarian kosong
+                    layoutEmpty.visibility = if (filtered.isEmpty()) View.VISIBLE else View.GONE
+                }
             }
         }
+    }
 
-        adapter.updateData(filtered, isAdmin)
+    override fun onDestroyView() {
+        filterJob?.cancel()
+        super.onDestroyView()
     }
 }

@@ -6,7 +6,7 @@ import java.util.Locale
 
 object LocaleHelper {
     private const val SELECTED_LANGUAGE = "app_lang"
-    private const val DEFAULT_LANGUAGE = "id" // Menggunakan 'id' sebagai standar modern
+    private const val DEFAULT_LANGUAGE = "in"
 
     fun onAttach(context: Context): Context {
         val lang = getPersistedData(context, DEFAULT_LANGUAGE)
@@ -19,17 +19,22 @@ object LocaleHelper {
     }
 
     private fun updateResources(context: Context, language: String): Context {
-        val locale = Locale(language)
+        // Normalisasi: Folder Anda bernama 'values-in', jadi paksa pakai kode 'in'
+        val localeCode = if (language == "id") "in" else language
+        val locale = Locale(localeCode)
         Locale.setDefault(locale)
 
-        val resources = context.resources
-        val configuration = Configuration(resources.configuration)
+        val res = context.resources
+        val config = Configuration(res.configuration)
         
-        configuration.setLocale(locale)
-        configuration.setLayoutDirection(locale)
+        config.setLocale(locale)
+        config.setLayoutDirection(locale)
 
-        // createConfigurationContext direkomendasikan untuk API 17+ (minSdk proyek ini 24)
-        return context.createConfigurationContext(configuration)
+        // Update configuration lama untuk memastikan resource global ikut berubah
+        @Suppress("DEPRECATION")
+        res.updateConfiguration(config, res.displayMetrics)
+
+        return context.createConfigurationContext(config)
     }
 
     fun getLanguage(context: Context): String {

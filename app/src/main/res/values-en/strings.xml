@@ -54,6 +54,9 @@
     <string name="error_must_login">Please login first</string>
     <string name="error_no_whatsapp">WhatsApp is not installed</string>
     <string name="error_image_permission">Failed to get image permission</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server_unavailable">Server unavailable. Please try again later.</string>
+    <string name="error_current_password_wrong">Current password is wrong!</string>
 
     <!-- Rental Form -->
     <string name="rental_form_title">Rental Form</string>
@@ -191,6 +194,7 @@
     <string name="label_capacity">Capacity (7 Seats)</string>
     <string name="label_location">Location</string>
     <string name="label_description">Unit Description</string>
+    <string name="success_delete">Successfully deleted</string>
 
     <!-- Settings & Profile Edit -->
     <string name="settings_title">Settings</string>
@@ -205,6 +209,11 @@
     <string name="language_changed">Language changed to English</string>
     <string name="feature_coming_soon">This feature is coming soon</string>
     <string name="btn_save_changes">Save Changes</string>
+    <string name="notif_enabled">Notifications enabled</string>
+    <string name="notif_disabled">Notifications disabled</string>
+    <string name="delete_account_confirm">Are you sure you want to delete your account? This action cannot be undone.</string>
+    <string name="btn_delete">Delete</string>
+    <string name="delete_account_success">Account successfully deleted</string>
 
     <!-- Change Password Strings -->
     <string name="change_password_title">Change Password</string>
@@ -215,7 +224,6 @@
     <string name="label_confirm_new_password">Confirm New Password*</string>
     <string name="hint_confirm_new_password">Confirm new password…</string>
     <string name="btn_update_password">Update Password</string>
-    <string name="error_current_password_wrong">Current password is wrong!</string>
     <string name="password_update_success">Password updated successfully</string>
 
     <!-- Notification Strings -->

@@ -24,20 +24,14 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(
-            R.layout.fragment_settings,
-            container,
-            false
-        )
+        return inflater.inflate(R.layout.fragment_settings, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val toolbar = view.findViewById<Toolbar>(R.id.toolbarSettings)
-        toolbar.setNavigationOnClickListener {
-            findNavController().navigateUp()
-        }
+        toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
 
         setupObservers()
 
@@ -53,22 +47,20 @@ class SettingsFragment : Fragment() {
         switchNotif.isChecked = sharedPref.getBoolean("notifications_enabled", true)
         switchNotif.setOnCheckedChangeListener { _, isChecked ->
             sharedPref.edit().putBoolean("notifications_enabled", isChecked).apply()
-            val msg = if (isChecked) "Notifikasi diaktifkan" else "Notifikasi dimatikan"
+            val msg = if (isChecked) getString(R.string.notif_enabled) else getString(R.string.notif_disabled)
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
 
         // --- Update Teks Bahasa Saat Ini ---
         val tvCurrentLang = view.findViewById<TextView>(R.id.tvCurrentLanguage)
-        val currentLang = LocaleHelper.getLanguage(requireContext())
-        tvCurrentLang?.text = if (currentLang == "id" || currentLang == "in") "Indonesia" else "English"
+        tvCurrentLang?.text = getString(R.string.current_language)
 
         // Bahasa / Language
-        val btnLanguage = view.findViewById<View>(R.id.btnChangeLanguage)
-        btnLanguage.setOnClickListener {
+        view.findViewById<View>(R.id.btnChangeLanguage).setOnClickListener {
             showLanguageDialog()
         }
 
-        // --- Hapus Akun (Danger Zone) ---
+        // --- Hapus Akun ---
         view.findViewById<View>(R.id.btnDeleteAccount).setOnClickListener {
             showDeleteAccountConfirmation()
         }
@@ -78,7 +70,7 @@ class SettingsFragment : Fragment() {
         userViewModel.isSuccess.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { success ->
                 if (success) {
-                    Toast.makeText(requireContext(), "Akun berhasil dihapus", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.delete_account_success), Toast.LENGTH_SHORT).show()
                     val intent = Intent(requireContext(), MainActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
@@ -88,8 +80,8 @@ class SettingsFragment : Fragment() {
 
         userViewModel.error.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { errorResId ->
-                errorResId?.let {
-                    Toast.makeText(requireContext(), getString(it), Toast.LENGTH_SHORT).show()
+                if (errorResId != null && errorResId != 0) {
+                    Toast.makeText(requireContext(), getString(errorResId), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -98,34 +90,34 @@ class SettingsFragment : Fragment() {
     private fun showDeleteAccountConfirmation() {
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.delete_account))
-            .setMessage("Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.")
-            .setPositiveButton("Hapus") { _, _ ->
-                val email = userViewModel.getUserEmail()
-                if (email != null) {
-                    userViewModel.deleteAccount(email)
-                }
+            .setMessage(getString(R.string.delete_account_confirm))
+            .setPositiveButton(getString(R.string.btn_delete)) { _, _ ->
+                userViewModel.getUserEmail()?.let { userViewModel.deleteAccount(it) }
             }
-            .setNegativeButton("Batal", null)
+            .setNegativeButton(getString(R.string.btn_batal), null)
             .show()
     }
 
     private fun showLanguageDialog() {
         val languages = arrayOf("Indonesia", "English")
-        val languageCodes = arrayOf("id", "en")
+        val codes = arrayOf("id", "en")
 
         AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.language))
-            .setItems(languages) { _, which ->
-                setAppLocale(languageCodes[which])
-            }
+            .setItems(languages) { _, which -> setAppLocale(codes[which]) }
             .show()
     }
 
     private fun setAppLocale(languageCode: String) {
+        // Terapkan bahasa baru
         LocaleHelper.setLocale(requireContext(), languageCode)
         
-        val intent = requireActivity().intent
+        // Restart HomeActivity dan bersihkan tumpukan aplikasi agar bahasa berubah di semua layar
+        val intent = Intent(requireContext(), HomeActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(intent)
         requireActivity().finish()
-        requireActivity().startActivity(intent)
+        
+        Toast.makeText(requireContext(), getString(R.string.language_changed), Toast.LENGTH_SHORT).show()
     }
 }

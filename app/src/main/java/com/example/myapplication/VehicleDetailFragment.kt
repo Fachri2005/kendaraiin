@@ -27,17 +27,12 @@ class VehicleDetailFragment : Fragment() {
     private lateinit var userRepository: UserRepository
     private var vehicleId: Int = -1
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_vehicle_detail, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         vehicleRepository = EventRepository(requireContext())
         userRepository = UserRepository(requireContext())
         vehicleId = arguments?.getInt("vehicle_id") ?: -1
@@ -45,25 +40,23 @@ class VehicleDetailFragment : Fragment() {
         val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         toolbar?.setNavigationOnClickListener { findNavController().navigateUp() }
 
-        if (vehicleId != -1) {
-            loadVehicleData(view)
-        }
-        
+        if (vehicleId != -1) loadVehicleData(view)
         setupObservers()
     }
 
     private fun setupObservers() {
         eventViewModel.error.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { errorResId ->
-                Toast.makeText(context, getString(errorResId), Toast.LENGTH_SHORT).show()
+                // FIX BUG BLANK SCREEN: Cek nullability dan isAdded
+                if (errorResId != null && isAdded) {
+                    Toast.makeText(requireContext(), getString(errorResId), Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
         eventViewModel.rentalSuccess.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { success ->
-                if (success) {
-                    findNavController().navigateUp()
-                }
+                if (success && isAdded) findNavController().navigateUp()
             }
         }
         
@@ -77,11 +70,12 @@ class VehicleDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = vehicleRepository.getEventByIdFromApi(vehicleId)
-                if (response.isSuccessful && response.body()?.success == true) {
-                    response.body()?.data?.let { displayVehicle(view, it) }
+                val vehicle = if (response.isSuccessful && response.body()?.success == true) {
+                    response.body()?.data
                 } else {
-                    vehicleRepository.getEventById(vehicleId)?.let { displayVehicle(view, it) }
+                    vehicleRepository.getEventById(vehicleId)
                 }
+                vehicle?.let { displayVehicle(view, it) }
             } catch (e: Exception) {
                 vehicleRepository.getEventById(vehicleId)?.let { displayVehicle(view, it) }
             }
@@ -89,6 +83,7 @@ class VehicleDetailFragment : Fragment() {
     }
 
     private fun displayVehicle(view: View, vehicle: Event) {
+        if (!isAdded) return
         val ivDetail = view.findViewById<ImageView>(R.id.ivVehicleDetail)
         val tvName = view.findViewById<TextView>(R.id.tvVehicleName)
         val tvPrice = view.findViewById<TextView>(R.id.tvVehiclePrice)
@@ -97,11 +92,8 @@ class VehicleDetailFragment : Fragment() {
         val layoutAdminActions = view.findViewById<LinearLayout>(R.id.layoutAdminActions)
         val btnApprove = view.findViewById<Button>(R.id.btnApproveAdmin)
         val btnReject = view.findViewById<Button>(R.id.btnRejectAdmin)
-        val context = requireContext()
 
         tvName?.text = vehicle.name ?: getString(R.string.unknown_name)
-        
-        // Fix Bug Harga: Gunakan formattedPrice dari model Event agar seragam
         tvPrice?.text = getString(R.string.price_per_day_format, vehicle.formattedPrice)
         
         view.findViewById<TextView>(R.id.tvVehicleDesc)?.text = vehicle.description
@@ -110,27 +102,21 @@ class VehicleDetailFragment : Fragment() {
         view.findViewById<TextView>(R.id.tvDetailSeats)?.text = getString(R.string.seats_format, vehicle.seats ?: "2")
         view.findViewById<TextView>(R.id.tvDetailLocation)?.text = vehicle.location
 
-        // Fix Bug Gambar: Gunakan Glide untuk memuat gambar agar terhindar dari SecurityException
         if (ivDetail != null) {
-            if (!vehicle.imageUri.isNullOrEmpty()) {
-                Glide.with(this)
-                    .load(Uri.parse(vehicle.imageUri))
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .error(android.R.drawable.ic_menu_gallery)
-                    .centerCrop()
-                    .into(ivDetail)
-            } else {
-                ivDetail.setImageResource(android.R.drawable.ic_menu_gallery)
-            }
+            Glide.with(this)
+                .load(vehicle.imageUri ?: android.R.drawable.ic_menu_gallery)
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .override(800, 600)
+                .centerCrop()
+                .into(ivDetail)
         }
 
         loadShopInfo(view, vehicle.adminEmail)
 
-        val currentUserRole = userViewModel.getUserRole() ?: "Customer"
-        val currentUserEmail = userViewModel.getUserEmail() ?: ""
-        val isAdmin = currentUserRole.equals("Admin", ignoreCase = true)
-        val isRenter = vehicle.renterEmail?.trim().equals(currentUserEmail.trim(), ignoreCase = true)
-
+        val userRole = userViewModel.getUserRole() ?: "Customer"
+        val userEmail = userViewModel.getUserEmail() ?: ""
+        val isAdmin = userRole.equals("Admin", ignoreCase = true)
+        val isRenter = vehicle.renterEmail?.trim().equals(userEmail.trim(), ignoreCase = true)
         val status = vehicle.effectiveStatus
 
         btnSewa?.visibility = View.GONE
@@ -140,7 +126,6 @@ class VehicleDetailFragment : Fragment() {
         if (status.isEmpty() || status == "canceled") {
             btnSewa?.visibility = View.VISIBLE
             btnSewa?.text = getString(R.string.btn_sewa_now)
-            btnSewa?.isEnabled = true
             btnSewa?.setOnClickListener {
                 if (userViewModel.isLoggedIn()) {
                     val bundle = Bundle().apply {
@@ -150,16 +135,14 @@ class VehicleDetailFragment : Fragment() {
                     }
                     findNavController().navigate(R.id.navigation_rental_form, bundle)
                 } else {
-                    Toast.makeText(context, getString(R.string.error_must_login), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.error_must_login), Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
             tvStatusInfo?.visibility = View.VISIBLE
-            
             val statusDisplay = when (status) {
                 "pending" -> getString(R.string.status_pending)
                 "approved" -> getString(R.string.status_approved)
-                "canceled" -> getString(R.string.status_canceled)
                 "completed" -> getString(R.string.status_completed)
                 else -> status.uppercase()
             }
@@ -168,18 +151,12 @@ class VehicleDetailFragment : Fragment() {
             if (status == "pending") {
                 if (isAdmin) {
                     layoutAdminActions?.visibility = View.VISIBLE
-                    btnApprove?.setOnClickListener {
-                        eventViewModel.updateRentalStatus(vehicle.id, "approved", currentUserEmail)
-                    }
-                    btnReject?.setOnClickListener {
-                        eventViewModel.updateRentalStatus(vehicle.id, "canceled", currentUserEmail)
-                    }
+                    btnApprove?.setOnClickListener { eventViewModel.updateRentalStatus(vehicle.id, "approved", userEmail) }
+                    btnReject?.setOnClickListener { eventViewModel.updateRentalStatus(vehicle.id, "canceled", userEmail) }
                 } else if (isRenter) {
                     btnSewa?.visibility = View.VISIBLE
                     btnSewa?.text = getString(R.string.btn_cancel_rental)
-                    btnSewa?.setOnClickListener {
-                        eventViewModel.updateRentalStatus(vehicle.id, "canceled", null)
-                    }
+                    btnSewa?.setOnClickListener { eventViewModel.updateRentalStatus(vehicle.id, "canceled", null) }
                 } else {
                     btnSewa?.visibility = View.VISIBLE
                     btnSewa?.text = getString(R.string.status_processing)
@@ -193,24 +170,21 @@ class VehicleDetailFragment : Fragment() {
         }
     }
 
-    private fun loadShopInfo(view: View, adminEmail: String?) {
+    private fun loadShopInfo(view: View, email: String?) {
+        if (email.isNullOrEmpty()) return
         val tvShopName = view.findViewById<TextView>(R.id.tvShopName)
         val btnVisitShop = view.findViewById<Button>(R.id.btnVisitShop)
 
-        if (!adminEmail.isNullOrEmpty()) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val admin = userRepository.getUserByEmail(adminEmail)
-                if (admin != null) {
-                    tvShopName?.text = admin.name
-                    btnVisitShop?.setOnClickListener {
-                        val bundle = Bundle().apply {
-                            putString("admin_email", admin.email)
-                        }
-                        findNavController().navigate(R.id.navigation_shop, bundle)
-                    }
-                } else {
-                    tvShopName?.text = getString(R.string.general_renter)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val admin = userRepository.getUserByEmail(email)
+            if (admin != null && isAdded) {
+                tvShopName?.text = admin.name
+                btnVisitShop?.setOnClickListener {
+                    val bundle = Bundle().apply { putString("admin_email", admin.email) }
+                    findNavController().navigate(R.id.navigation_shop, bundle)
                 }
+            } else {
+                tvShopName?.text = getString(R.string.general_renter)
             }
         }
     }

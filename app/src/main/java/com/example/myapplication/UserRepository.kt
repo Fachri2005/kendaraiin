@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.content.Context
+import android.util.Log
 import androidx.core.content.edit
 import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
@@ -14,42 +15,72 @@ class UserRepository(
     private val sharedPref = appContext.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
     suspend fun registerUser(user: User): Boolean = withContext(Dispatchers.IO) {
-        val response = apiService.register("register", user)
-        return@withContext response.isSuccessful && response.body()?.success == true
+        try {
+            val response = apiService.register("register", user)
+            response.isSuccessful && response.body()?.success == true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Register Error", e)
+            false
+        }
     }
 
     suspend fun loginUser(email: String, password: String): User? = withContext(Dispatchers.IO) {
-        val response = apiService.login("login", email, password)
-        if (response.isSuccessful) {
-            val body = response.body()
-            if (body?.success == true) body.data else null
-        } else {
+        try {
+            val response = apiService.login("login", email, password)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) body.data else null
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "Login Error", e)
             null
         }
     }
 
     suspend fun getUserByEmail(email: String): User? = withContext(Dispatchers.IO) {
-        val response = apiService.getUserByEmail("profile", email)
-        return@withContext if (response.isSuccessful && response.body()?.success == true) {
-            response.body()?.data
-        } else {
+        try {
+            val response = apiService.getUserByEmail("profile", email)
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.data
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("UserRepository", "GetUserByEmail Error", e)
             null
         }
     }
 
     suspend fun updateUser(email: String, name: String, phone: String, imageUri: String): Boolean = withContext(Dispatchers.IO) {
-        val response = apiService.updateUser("update_profile", email, name, phone, imageUri)
-        return@withContext response.isSuccessful && response.body()?.success == true
+        try {
+            val response = apiService.updateUser("update_profile", email, name, phone, imageUri)
+            response.isSuccessful && response.body()?.success == true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "UpdateUser Error", e)
+            false
+        }
     }
 
     suspend fun changePassword(email: String, currentPass: String, newPass: String): ApiResponse<Unit>? = withContext(Dispatchers.IO) {
-        val response = apiService.changePassword("change_password", email, currentPass, newPass)
-        return@withContext response.body()
+        try {
+            val response = apiService.changePassword("change_password", email, currentPass, newPass)
+            response.body()
+        } catch (e: Exception) {
+            Log.e("UserRepository", "ChangePassword Error", e)
+            null
+        }
     }
 
     suspend fun deleteAccount(email: String): Boolean = withContext(Dispatchers.IO) {
-        val response = apiService.deleteAccount("delete_account", email)
-        return@withContext response.isSuccessful && response.body()?.success == true
+        try {
+            val response = apiService.deleteAccount("delete_account", email)
+            response.isSuccessful && response.body()?.success == true
+        } catch (e: Exception) {
+            Log.e("UserRepository", "DeleteAccount Error", e)
+            false
+        }
     }
 
     suspend fun saveLoginSession(user: User) = withContext(Dispatchers.IO) {

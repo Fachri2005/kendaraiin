@@ -115,6 +115,7 @@
 
     <!-- List Strings -->
     <string name="list_title">Cari Kendaraan</string>
+    <string name="menu_search">Pencarian</string>
     <string name="list_title_admin">Daftar Unit Saya</string>
     <string name="list_search_hint">Cari kendaraan atau nama toko…</string>
     <string name="list_search_hint_admin">Cari di unit saya…</string>
@@ -193,6 +194,7 @@
     <string name="label_capacity">Kapasitas (7 Kursi)</string>
     <string name="label_location">Lokasi</string>
     <string name="label_description">Deskripsi Unit</string>
+    <string name="success_delete">Berhasil dihapus</string>
 
     <!-- Settings & Profile Edit -->
     <string name="settings_title">Pengaturan</string>
@@ -207,6 +209,11 @@
     <string name="language_changed">Bahasa diubah ke Indonesia</string>
     <string name="feature_coming_soon">Fitur ini akan segera hadir</string>
     <string name="btn_save_changes">Simpan Perubahan</string>
+    <string name="notif_enabled">Notifikasi diaktifkan</string>
+    <string name="notif_disabled">Notifikasi dimatikan</string>
+    <string name="delete_account_confirm">Apakah Anda yakin ingin menghapus akun? Tindakan ini tidak dapat dibatalkan.</string>
+    <string name="btn_delete">Hapus</string>
+    <string name="delete_account_success">Akun berhasil dihapus</string>
 
     <!-- Change Password Strings -->
     <string name="change_password_title">Ubah Password</string>
