@@ -11,7 +11,7 @@
     <item
         android:id="@+id/navigation_ticket"
         android:icon="@android:drawable/ic_menu_recent_history"
-        android:title="@string/confirm_rental_title" />
+        android:title="@string/ticket_title" />
     <item
         android:id="@+id/navigation_profile"
         android:icon="@android:drawable/ic_menu_myplaces"

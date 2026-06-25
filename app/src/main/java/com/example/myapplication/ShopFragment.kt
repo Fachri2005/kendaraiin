@@ -51,7 +51,7 @@ class ShopFragment : Fragment() {
         val tvEmail = view?.findViewById<TextView>(R.id.tvShopProfileEmail)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val admin = userRepository.getUserByEmail(adminEmail!!)
+            val admin = userRepository.getUserByEmail(adminEmail ?: return@launch)
             if (admin != null && isAdded) {
                 tvName?.text = admin.name
                 tvEmail?.text = admin.email
@@ -78,7 +78,7 @@ class ShopFragment : Fragment() {
     private fun loadAdminVehicles() {
         viewLifecycleOwner.lifecycleScope.launch {
             // FIX: Gunakan background thread untuk ambil data DB agar tidak LAG
-            val vehicles = vehicleRepository.getEventsByAdmin(adminEmail!!)
+            val vehicles = vehicleRepository.getEventsByAdmin(adminEmail ?: return@launch)
             withContext(Dispatchers.Main) {
                 if (isAdded) {
                     adapter.updateData(vehicles, false)

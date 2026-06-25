@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         userViewModel.isLoading.observe(this) { isLoading ->
             binding.btnMasuk.isEnabled = !isLoading
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-            binding.btnMasuk.text = if (isLoading) "" else getString(R.string.btn_masuk)
+            binding.btnMasuk.text = getString(R.string.btn_masuk)
         }
     }
 

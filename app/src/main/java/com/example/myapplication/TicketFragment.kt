@@ -63,6 +63,7 @@ class TicketFragment : Fragment() {
     private fun observeViewModel() {
         eventViewModel.events.observe(viewLifecycleOwner) { applyFilters() }
         eventViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (_binding == null) return@observe
             if (!binding.swipeRefresh.isRefreshing) binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
         eventViewModel.error.observe(viewLifecycleOwner) { event ->

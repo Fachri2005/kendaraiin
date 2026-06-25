@@ -70,6 +70,7 @@ class ProfileFragment : Fragment() {
 
     private fun setupObservers() {
         userViewModel.user.observe(viewLifecycleOwner) { user ->
+            if (_binding == null) return@observe
             if (user != null) {
                 binding.tvProfileName.text = user.name
                 binding.tvProfileEmail.text = user.email

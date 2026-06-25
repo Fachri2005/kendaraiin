@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     // Gunakan 10.0.2.2 agar emulator bisa memanggil localhost laptop
-    private const val BASE_URL = "http://10.128.116.140/event_api/"
+    private const val BASE_URL = " http://10.0.2.2/event_api/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         // Menggunakan HEADERS alih-alih BODY untuk menghindari 'unexpected end of stream'

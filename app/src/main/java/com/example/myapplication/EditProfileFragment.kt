@@ -32,10 +32,12 @@ class EditProfileFragment : Fragment() {
                     requireContext().contentResolver.takePersistableUriPermission(it, takeFlags)
                     selectedImageUri = it
                     
-                    Glide.with(this)
-                        .load(it)
-                        .centerCrop()
-                        .into(binding.ivEditProfile)
+                    if (_binding != null) {
+                        Glide.with(this)
+                            .load(it)
+                            .centerCrop()
+                            .into(binding.ivEditProfile)
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Toast.makeText(context, getString(R.string.error_image_permission), Toast.LENGTH_SHORT).show()

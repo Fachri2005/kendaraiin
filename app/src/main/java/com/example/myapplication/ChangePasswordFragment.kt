@@ -87,6 +87,7 @@ class ChangePasswordFragment : Fragment() {
         }
 
         userViewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            if (_binding == null) return@observe
             binding.btnUpdatePassword.isEnabled = !isLoading
             binding.btnUpdatePassword.text = if (isLoading) "..." else getString(R.string.btn_update_password)
         }
